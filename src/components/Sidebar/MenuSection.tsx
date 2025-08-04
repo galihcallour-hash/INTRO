@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronIcon, ThreeDotsIcon, EditIcon, PlusIcon, DeleteIcon, ReorderIcon, DragHandleIcon } from '../icons';
+import { ChevronIcon, ThreeDotsIcon, EditIcon, PlusIcon, DeleteIcon, ReorderIcon } from '../icons';
 
 interface MenuSectionProps {
   title: string;
@@ -14,11 +14,7 @@ interface MenuSectionProps {
 export default function MenuSection({ 
   title, 
   children, 
-  onAddNewMenu, 
-  onDragStart, 
-  onDragOver, 
-  onDrop, 
-  isDragging = false 
+  onAddNewMenu
 }: MenuSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isHovered, setIsHovered] = useState(false);

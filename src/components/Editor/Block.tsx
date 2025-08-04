@@ -39,7 +39,7 @@ export default function Block({
   onContentChange,
   onTypeChange,
   onAddBlock,
-  onDeleteBlock,
+
   onFocus,
   onKeyDown,
   onDragStart,
@@ -52,7 +52,6 @@ export default function Block({
 }: BlockProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showFormatToolbar, setShowFormatToolbar] = useState(false);
-  const [selectedText, setSelectedText] = useState('');
   const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
   const contentRef = useRef<HTMLDivElement>(null);
   const slashMenuRef = useRef<HTMLDivElement>(null);
@@ -127,13 +126,13 @@ export default function Block({
     onFocus(block.id);
   };
 
-  const handleMouseUp = (e: React.MouseEvent) => {
+  const handleMouseUp = () => {
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) {
       const range = selection.getRangeAt(0);
       const rect = range.getBoundingClientRect();
       
-      setSelectedText(selection.toString());
+
       setToolbarPosition({
         x: rect.left + (rect.width / 2),
         y: rect.top + window.scrollY
@@ -321,7 +320,6 @@ export default function Block({
       {/* Text Formatting Toolbar */}
       <TextFormatter
         show={showFormatToolbar}
-        selectedText={selectedText}
         position={toolbarPosition}
         onClose={() => setShowFormatToolbar(false)}
       />

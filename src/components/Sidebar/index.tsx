@@ -67,7 +67,6 @@ export default function Sidebar({ onMenuChange }: SidebarProps) {
   const [showAddMenuModal, setShowAddMenuModal] = useState(false);
   const [currentSectionForNewMenu, setCurrentSectionForNewMenu] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<{type: 'section' | 'item', sectionId: string, itemId?: string} | null>(null);
-  const [draggedOverItem, setDraggedOverItem] = useState<{type: 'section' | 'item', sectionId: string, itemId?: string} | null>(null);
 
   const handleMenuClick = (menuData: MenuItemData) => {
     setActiveMenu(menuData.id);

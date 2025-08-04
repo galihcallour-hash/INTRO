@@ -30,7 +30,7 @@ export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, tabName
         <div className="mb-4">
           <h3 className="text-lg font-semibold text-white mb-2">Delete Tab</h3>
           <p className="text-neutral-300 text-sm">
-            Are you sure you want to delete the "{tabName}" tab? This action cannot be undone.
+            Are you sure you want to delete the &quot;{tabName}&quot; tab? This action cannot be undone.
           </p>
         </div>
         

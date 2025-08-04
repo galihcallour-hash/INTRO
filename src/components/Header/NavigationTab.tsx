@@ -23,7 +23,6 @@ export default function NavigationTab({
   canDelete = true,
   onHover,
   shiftDirection = 'none',
-  isLastTab = false,
   onLabelChange
 }: NavigationTabProps) {
   const [isHovered, setIsHovered] = useState(false);

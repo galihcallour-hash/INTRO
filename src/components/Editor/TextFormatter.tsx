@@ -2,12 +2,11 @@ import React, { useEffect, useRef } from 'react';
 
 interface TextFormatterProps {
   show: boolean;
-  selectedText: string;
   onClose: () => void;
   position?: { x: number; y: number };
 }
 
-export default function TextFormatter({ show, selectedText, onClose, position }: TextFormatterProps) {
+export default function TextFormatter({ show, onClose, position }: TextFormatterProps) {
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
