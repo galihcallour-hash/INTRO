@@ -35,10 +35,19 @@ export default function MenuItem({
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const threeDotsRef = useRef<HTMLButtonElement>(null);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const toggleDropdown = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDropdown(!showDropdown);
+  };
+
+  const handleMenuItemClick = () => {
+    // Clear any existing timeout
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+    onClick?.();
   };
 
   const handleDropdownAction = (action: string, e: React.MouseEvent) => {
@@ -60,6 +69,16 @@ export default function MenuItem({
         onDelete?.();
         break;
     }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    onDragOver?.(e);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    onDrop?.(e);
   };
 
   // Close dropdown when clicking outside
@@ -95,15 +114,15 @@ export default function MenuItem({
           setIsHovered(false);
         }
       }}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
     >
       {/* Main button container that includes all elements */}
       <div 
         className={`flex flex-row items-center w-full pb-[5.25px] pl-[8px] pr-[4px] pt-[4.25px] rounded-[6px] transition-all duration-300 ease-in-out hover:bg-[rgba(250,250,250,0.05)] cursor-pointer ${
           isActive ? 'bg-[rgba(250,250,250,0.1)]' : ''
         }`}
-        onClick={onClick}
+        onClick={handleMenuItemClick}
       >
         {/* Drag Handle - appears on left when hovered only */}
         <div
@@ -112,12 +131,12 @@ export default function MenuItem({
               ? 'opacity-100' 
               : 'opacity-0 pointer-events-none'
           }`}
-          draggable
-          onDragStart={onDragStart}
+            draggable
+            onDragStart={onDragStart}
           title="Drag to reorder"
           onClick={(e) => e.stopPropagation()}
-        >
-          <DragHandleIcon />
+          >
+            <DragHandleIcon />
         </div>
 
         {/* Main button content */}

@@ -111,7 +111,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
     },
     'folder-name': {
       title: 'Folder Name',
-      icon: <FolderIcon />,
+  icon: <FolderIcon />,
       description: 'Naming conventions for Figma folders and project organization',
       content: [
         {
@@ -244,7 +244,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       content: [
         {
           id: 'layer-intro',
-          type: 'paragraph',
+        type: 'paragraph',
           content: 'Consistent layer naming improves file organization and makes handoff to developers more efficient.',
         },
         {
@@ -276,7 +276,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       content: [
         {
           id: 'bank-intro',
-          type: 'paragraph',
+        type: 'paragraph',
           content: 'Our design bank contains reusable assets, templates, and resources to maintain consistency and efficiency.',
         },
         {
@@ -328,7 +328,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
         },
         {
           id: 'component-3',
-          type: 'paragraph',
+        type: 'paragraph',
           content: '• **Patterns** - Layout patterns and interaction guidelines',
         }
       ]
@@ -360,7 +360,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
         },
         {
           id: 'type-3',
-          type: 'paragraph',
+        type: 'paragraph',
           content: '• **System Flows** - Technical process flows and data relationships',
         }
       ]
@@ -392,17 +392,23 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
         },
         {
           id: 'tool-3',
-          type: 'paragraph',
+        type: 'paragraph',
           content: '• **Design Assistance** - Layout suggestions and color palette generation',
         }
       ]
     },
+    
     // Company Tab Content
     'mission-vision': {
       title: 'Mission & Vision',
       icon: <DesignIcon />,
       description: 'Our company mission, vision, and core values',
       content: [
+        {
+          id: 'mission-intro',
+          type: 'paragraph',
+          content: 'Our mission and vision guide every decision we make and define our purpose as an organization.',
+        },
         {
           id: 'mission-heading',
           type: 'heading1',
@@ -411,7 +417,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
         {
           id: 'mission-content',
           type: 'paragraph',
-          content: 'To create exceptional digital experiences that empower businesses and delight users through innovative design and technology.',
+          content: 'To create innovative solutions that empower businesses and improve user experiences through thoughtful design and technology.',
         },
         {
           id: 'vision-heading',
@@ -420,81 +426,386 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
         },
         {
           id: 'vision-content',
-          type: 'paragraph',
-          content: 'To be the leading design and development partner that transforms ideas into impactful digital solutions.',
+        type: 'paragraph',
+          content: 'To be the leading partner for companies seeking to transform their digital presence and create meaningful connections with their users.',
         }
       ]
     },
     'company-values': {
       title: 'Company Values',
       icon: <FlowIcon />,
-      description: 'The core values that guide our work and culture',
+      description: 'Core values that define our culture and guide our work',
       content: [
         {
           id: 'values-intro',
           type: 'paragraph',
-          content: 'Our values shape how we work, collaborate, and deliver exceptional results for our clients.',
+          content: 'Our values are the foundation of our culture and guide how we work together and serve our clients.',
+        },
+        {
+          id: 'values-heading',
+          type: 'heading1',
+          content: 'Core Values',
         },
         {
           id: 'value-1',
           type: 'paragraph',
-          content: '**Excellence** - We strive for the highest quality in everything we do',
+          content: '• **Innovation** - We constantly seek new and better ways to solve problems',
         },
         {
           id: 'value-2',
           type: 'paragraph',
-          content: '**Innovation** - We embrace new ideas and cutting-edge technologies',
+          content: '• **Collaboration** - We work together to achieve shared goals',
         },
         {
           id: 'value-3',
           type: 'paragraph',
-          content: '**Collaboration** - We believe in the power of teamwork and open communication',
+          content: '• **Excellence** - We strive for the highest quality in everything we do',
+        },
+        {
+          id: 'value-4',
+          type: 'paragraph',
+          content: '• **Integrity** - We act with honesty and transparency in all our dealings',
         }
       ]
     },
-    // Developer Tab Content
-    'coding-standards': {
-      title: 'Coding Standards',
-      icon: <FileIcon />,
-      description: 'Code quality guidelines and best practices',
+    'organization-chart': {
+      title: 'Organization Chart',
+      icon: <SystemIcon />,
+      description: 'Our organizational structure and team hierarchy',
       content: [
         {
-          id: 'standards-intro',
+          id: 'org-intro',
           type: 'paragraph',
-          content: 'Consistent coding standards ensure maintainable, readable, and scalable code across all projects.',
+          content: 'Our organizational structure is designed to promote collaboration and clear communication across all levels.',
         },
         {
-          id: 'standards-heading',
+          id: 'org-heading',
           type: 'heading1',
-          content: 'Key Standards',
+          content: 'Leadership Team',
+        },
+        {
+          id: 'leadership-content',
+          type: 'paragraph',
+          content: 'Our leadership team brings together diverse expertise in design, technology, and business strategy.',
+        }
+      ]
+    },
+    'hr-policies': {
+      title: 'HR Policies',
+      icon: <FileIcon />,
+      description: 'Human resources policies and procedures',
+      content: [
+        {
+          id: 'hr-intro',
+          type: 'paragraph',
+          content: 'Our HR policies ensure a fair, inclusive, and productive work environment for all team members.',
+        },
+        {
+          id: 'hr-heading',
+          type: 'heading1',
+          content: 'Key Policies',
+        },
+        {
+          id: 'policy-1',
+          type: 'paragraph',
+          content: '• Equal Opportunity Employment',
+        },
+        {
+          id: 'policy-2',
+          type: 'paragraph',
+          content: '• Work-Life Balance',
+        },
+        {
+          id: 'policy-3',
+          type: 'paragraph',
+          content: '• Professional Development',
+        }
+      ]
+    },
+    'code-of-conduct': {
+      title: 'Code of Conduct',
+      icon: <PageIcon />,
+      description: 'Guidelines for professional behavior and ethics',
+      content: [
+        {
+          id: 'conduct-intro',
+          type: 'paragraph',
+          content: 'Our code of conduct establishes the standards of behavior expected from all team members.',
+        },
+        {
+          id: 'conduct-heading',
+          type: 'heading1',
+          content: 'Behavioral Standards',
         },
         {
           id: 'standard-1',
           type: 'paragraph',
-          content: '• Use TypeScript for type safety and better developer experience',
+          content: '• Treat all colleagues with respect and professionalism',
         },
         {
           id: 'standard-2',
           type: 'paragraph',
-          content: '• Follow consistent naming conventions (camelCase for variables, PascalCase for components)',
+          content: '• Maintain confidentiality of sensitive information',
         },
         {
           id: 'standard-3',
           type: 'paragraph',
-          content: '• Write comprehensive tests for all critical functionality',
+          content: '• Report any violations or concerns promptly',
         }
       ]
     },
+    'security-policies': {
+      title: 'Security Policies',
+      icon: <LayersIcon />,
+      description: 'Information security and data protection policies',
+      content: [
+        {
+          id: 'security-intro',
+          type: 'paragraph',
+          content: 'Our security policies protect sensitive information and ensure compliance with industry standards.',
+        },
+        {
+          id: 'security-heading',
+          type: 'heading1',
+          content: 'Security Guidelines',
+        },
+        {
+          id: 'security-1',
+          type: 'paragraph',
+          content: '• Use strong passwords and enable two-factor authentication',
+        },
+        {
+          id: 'security-2',
+          type: 'paragraph',
+          content: '• Keep software and systems updated',
+        },
+        {
+          id: 'security-3',
+          type: 'paragraph',
+          content: '• Report security incidents immediately',
+        }
+      ]
+    },
+    
+    // Developer Tab Content
+    'coding-standards': {
+      title: 'Coding Standards',
+      icon: <FileIcon />,
+      description: 'Guidelines for writing clean, maintainable code',
+      content: [
+        {
+          id: 'coding-intro',
+          type: 'paragraph',
+          content: 'Our coding standards ensure consistency, readability, and maintainability across all projects.',
+        },
+        {
+          id: 'coding-heading',
+          type: 'heading1',
+          content: 'Code Quality Standards',
+        },
+        {
+          id: 'standard-1',
+          type: 'paragraph',
+          content: '• Use meaningful variable and function names',
+        },
+        {
+          id: 'standard-2',
+          type: 'paragraph',
+          content: '• Write clear comments and documentation',
+        },
+        {
+          id: 'standard-3',
+          type: 'paragraph',
+          content: '• Follow consistent formatting and indentation',
+        },
+        {
+          id: 'standard-4',
+          type: 'paragraph',
+          content: '• Implement proper error handling',
+        }
+      ]
+    },
+    'git-workflow': {
+      title: 'Git Workflow',
+      icon: <FlowIcon />,
+      description: 'Version control workflow and branching strategy',
+      content: [
+        {
+          id: 'git-intro',
+          type: 'paragraph',
+          content: 'Our Git workflow ensures clean version history and smooth collaboration across development teams.',
+        },
+        {
+          id: 'git-heading',
+          type: 'heading1',
+          content: 'Branching Strategy',
+        },
+        {
+          id: 'branch-1',
+          type: 'paragraph',
+          content: '• **main** - Production-ready code',
+        },
+        {
+          id: 'branch-2',
+          type: 'paragraph',
+          content: '• **develop** - Integration branch for features',
+        },
+        {
+          id: 'branch-3',
+          type: 'paragraph',
+          content: '• **feature/** - Individual feature development',
+        },
+        {
+          id: 'branch-4',
+          type: 'paragraph',
+          content: '• **hotfix/** - Critical production fixes',
+        }
+      ]
+    },
+    'code-review': {
+      title: 'Code Review',
+      icon: <PageIcon />,
+      description: 'Code review process and best practices',
+      content: [
+        {
+          id: 'review-intro',
+          type: 'paragraph',
+          content: 'Code reviews are essential for maintaining code quality and sharing knowledge across the team.',
+        },
+        {
+          id: 'review-heading',
+          type: 'heading1',
+          content: 'Review Process',
+        },
+        {
+          id: 'process-1',
+          type: 'paragraph',
+          content: '1. Create a pull request with clear description',
+        },
+        {
+          id: 'process-2',
+          type: 'paragraph',
+          content: '2. Request review from at least two team members',
+        },
+        {
+          id: 'process-3',
+          type: 'paragraph',
+          content: '3. Address feedback and make necessary changes',
+        },
+        {
+          id: 'process-4',
+          type: 'paragraph',
+          content: '4. Merge only after approval from reviewers',
+        }
+      ]
+    },
+    'api-docs': {
+      title: 'API Documentation',
+      icon: <SystemIcon />,
+      description: 'API documentation and integration guidelines',
+      content: [
+        {
+          id: 'api-intro',
+          type: 'paragraph',
+          content: 'Comprehensive API documentation for seamless integration and development.',
+        },
+        {
+          id: 'api-heading',
+          type: 'heading1',
+          content: 'API Overview',
+        },
+        {
+          id: 'api-1',
+          type: 'paragraph',
+          content: '• RESTful API design principles',
+        },
+        {
+          id: 'api-2',
+          type: 'paragraph',
+          content: '• Authentication and authorization',
+        },
+        {
+          id: 'api-3',
+          type: 'paragraph',
+          content: '• Rate limiting and error handling',
+        }
+      ]
+    },
+    'architecture': {
+      title: 'Architecture',
+      icon: <DesignIcon />,
+      description: 'System architecture and design patterns',
+      content: [
+        {
+          id: 'arch-intro',
+          type: 'paragraph',
+          content: 'Our system architecture follows modern design patterns and best practices for scalability and maintainability.',
+        },
+        {
+          id: 'arch-heading',
+          type: 'heading1',
+          content: 'Architecture Principles',
+        },
+        {
+          id: 'principle-1',
+          type: 'paragraph',
+          content: '• Microservices architecture for scalability',
+        },
+        {
+          id: 'principle-2',
+          type: 'paragraph',
+          content: '• Event-driven communication between services',
+        },
+        {
+          id: 'principle-3',
+          type: 'paragraph',
+          content: '• Database per service pattern',
+        }
+      ]
+    },
+    'deployment': {
+      title: 'Deployment Guide',
+      icon: <LayersIcon />,
+      description: 'Deployment procedures and environment management',
+      content: [
+        {
+          id: 'deploy-intro',
+          type: 'paragraph',
+          content: 'Our deployment process ensures reliable and consistent releases across all environments.',
+        },
+        {
+          id: 'deploy-heading',
+          type: 'heading1',
+          content: 'Deployment Pipeline',
+        },
+        {
+          id: 'pipeline-1',
+          type: 'paragraph',
+          content: '1. **Development** - Local development and testing',
+        },
+        {
+          id: 'pipeline-2',
+          type: 'paragraph',
+          content: '2. **Staging** - Pre-production testing environment',
+        },
+        {
+          id: 'pipeline-3',
+          type: 'paragraph',
+          content: '3. **Production** - Live environment with monitoring',
+        }
+      ]
+    },
+    
     // Content Tab Content
     'brand-voice': {
       title: 'Brand Voice',
       icon: <DesignIcon />,
-      description: 'Guidelines for consistent brand communication',
+      description: 'Brand voice and tone guidelines for consistent communication',
       content: [
         {
           id: 'voice-intro',
           type: 'paragraph',
-          content: 'Our brand voice reflects our personality and values in every piece of content we create.',
+          content: 'Our brand voice defines how we communicate with our audience and reflects our personality and values.',
         },
         {
           id: 'voice-heading',
@@ -504,23 +815,244 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
         {
           id: 'voice-1',
           type: 'paragraph',
-          content: '• **Professional yet approachable** - We maintain expertise while being friendly',
+          content: '• **Professional** - Knowledgeable and trustworthy',
         },
         {
           id: 'voice-2',
           type: 'paragraph',
-          content: '• **Clear and concise** - We communicate complex ideas simply',
+          content: '• **Approachable** - Friendly and accessible',
         },
         {
           id: 'voice-3',
           type: 'paragraph',
-          content: '• **Inspiring and confident** - We motivate action through positive messaging',
+          content: '• **Clear** - Simple and easy to understand',
+        },
+        {
+          id: 'voice-4',
+          type: 'paragraph',
+          content: '• **Inspiring** - Motivating and forward-thinking',
+        }
+      ]
+    },
+    'content-guidelines': {
+      title: 'Content Guidelines',
+      icon: <FileIcon />,
+      description: 'Guidelines for creating consistent, high-quality content',
+      content: [
+        {
+          id: 'content-intro',
+          type: 'paragraph',
+          content: 'Our content guidelines ensure all written materials maintain consistency and quality across all channels.',
+        },
+        {
+          id: 'content-heading',
+          type: 'heading1',
+          content: 'Writing Guidelines',
+        },
+        {
+          id: 'guideline-1',
+          type: 'paragraph',
+          content: '• Write in active voice whenever possible',
+        },
+        {
+          id: 'guideline-2',
+          type: 'paragraph',
+          content: '• Use clear, concise language',
+        },
+        {
+          id: 'guideline-3',
+          type: 'paragraph',
+          content: '• Maintain consistent terminology',
+        }
+      ]
+    },
+    'editorial-calendar': {
+      title: 'Editorial Calendar',
+      icon: <PageIcon />,
+      description: 'Content planning and scheduling guidelines',
+      content: [
+        {
+          id: 'calendar-intro',
+          type: 'paragraph',
+          content: 'Our editorial calendar helps plan, organize, and schedule content across all channels and platforms.',
+        },
+        {
+          id: 'calendar-heading',
+          type: 'heading1',
+          content: 'Planning Process',
+        },
+        {
+          id: 'planning-1',
+          type: 'paragraph',
+          content: '• Quarterly content strategy planning',
+        },
+        {
+          id: 'planning-2',
+          type: 'paragraph',
+          content: '• Monthly editorial calendar review',
+        },
+        {
+          id: 'planning-3',
+          type: 'paragraph',
+          content: '• Weekly content production schedule',
+        }
+      ]
+    },
+    'blog-posts': {
+      title: 'Blog Posts',
+      icon: <FlowIcon />,
+      description: 'Guidelines for writing engaging blog content',
+      content: [
+        {
+          id: 'blog-intro',
+          type: 'paragraph',
+          content: 'Blog posts are a key part of our content strategy, helping to educate, inform, and engage our audience.',
+        },
+        {
+          id: 'blog-heading',
+          type: 'heading1',
+          content: 'Blog Writing Guidelines',
+        },
+        {
+          id: 'blog-1',
+          type: 'paragraph',
+          content: '• Start with compelling headlines',
+        },
+        {
+          id: 'blog-2',
+          type: 'paragraph',
+          content: '• Use subheadings to break up content',
+        },
+        {
+          id: 'blog-3',
+          type: 'paragraph',
+          content: '• Include relevant images and examples',
+        }
+      ]
+    },
+    'social-media': {
+      title: 'Social Media',
+      icon: <ImageIcon />,
+      description: 'Social media content guidelines and best practices',
+      content: [
+        {
+          id: 'social-intro',
+          type: 'paragraph',
+          content: 'Social media content should be engaging, on-brand, and tailored to each platform\'s unique audience.',
+        },
+        {
+          id: 'social-heading',
+          type: 'heading1',
+          content: 'Platform Guidelines',
+        },
+        {
+          id: 'platform-1',
+          type: 'paragraph',
+          content: '• **LinkedIn** - Professional insights and company updates',
+        },
+        {
+          id: 'platform-2',
+          type: 'paragraph',
+          content: '• **Twitter** - Quick updates and industry commentary',
+        },
+        {
+          id: 'platform-3',
+          type: 'paragraph',
+          content: '• **Instagram** - Visual storytelling and behind-the-scenes',
+        }
+      ]
+    },
+    'marketing-copy': {
+      title: 'Marketing Copy',
+      icon: <SystemIcon />,
+      description: 'Guidelines for persuasive marketing content',
+      content: [
+        {
+          id: 'marketing-intro',
+          type: 'paragraph',
+          content: 'Marketing copy should be persuasive, benefit-focused, and aligned with our brand voice and values.',
+        },
+        {
+          id: 'marketing-heading',
+          type: 'heading1',
+          content: 'Copy Principles',
+        },
+        {
+          id: 'copy-1',
+          type: 'paragraph',
+          content: '• Focus on customer benefits, not just features',
+        },
+        {
+          id: 'copy-2',
+          type: 'paragraph',
+          content: '• Use clear, action-oriented language',
+        },
+        {
+          id: 'copy-3',
+          type: 'paragraph',
+          content: '• Include compelling calls-to-action',
+        }
+      ]
+    },
+    
+    // Help Tab Content
+    'overview': {
+      title: 'Overview',
+      icon: <DesignIcon />,
+      description: 'General overview and introduction',
+      content: [
+        {
+          id: 'overview-intro',
+          type: 'paragraph',
+          content: 'Welcome to our comprehensive documentation system. Here you\'ll find everything you need to get started.',
+        },
+        {
+          id: 'overview-heading',
+          type: 'heading1',
+          content: 'Getting Started',
+        },
+        {
+          id: 'overview-1',
+        type: 'paragraph',
+          content: 'Navigate through the sidebar to explore different sections and topics.',
+        }
+      ]
+    },
+    'getting-started': {
+      title: 'Getting Started',
+      icon: <FlowIcon />,
+      description: 'Quick start guide and basic information',
+      content: [
+        {
+          id: 'start-intro',
+          type: 'paragraph',
+          content: 'This guide will help you quickly get up to speed with our systems and processes.',
+        },
+        {
+          id: 'start-heading',
+          type: 'heading1',
+          content: 'First Steps',
+        },
+        {
+          id: 'step-1',
+          type: 'paragraph',
+          content: '1. Review the relevant documentation for your role',
+        },
+        {
+          id: 'step-2',
+          type: 'paragraph',
+          content: '2. Set up your development environment',
+        },
+        {
+          id: 'step-3',
+        type: 'paragraph',
+          content: '3. Connect with your team members',
         }
       ]
     }
   };
 
-  return contentMap[menuId] || {
+  const result = contentMap[menuId] || {
     title: 'Welcome',
     icon: <DesignIcon />,
     description: 'Select a menu item to view its content',
@@ -532,6 +1064,8 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       }
     ]
   };
+  
+  return result;
 };
 
 export default function MainContent({ selectedMenu }: MainContentProps) {
@@ -557,9 +1091,8 @@ export default function MainContent({ selectedMenu }: MainContentProps) {
   const iconDropdownRef = useRef<HTMLDivElement>(null);
   const iconButtonRef = useRef<HTMLButtonElement>(null);
 
-  const handleContentChange = (blocks: BlockData[]) => {
+  const handleContentChange = (_blocks: BlockData[]) => {
     // Here you could save the content to a backend or local storage
-    console.log('Content updated for', currentMenu.title, blocks);
   };
 
   const handleTitleClick = () => {
@@ -570,7 +1103,6 @@ export default function MainContent({ selectedMenu }: MainContentProps) {
   const handleTitleSave = () => {
     if (titleValue.trim()) {
       // Here you would update the title in your data structure
-      console.log('Title updated to:', titleValue.trim());
     }
     setIsEditingTitle(false);
   };
@@ -598,7 +1130,6 @@ export default function MainContent({ selectedMenu }: MainContentProps) {
     setSelectedIcon(iconData.icon);
     setShowIconDropdown(false);
     // Here you would update the icon in your data structure
-    console.log('Icon updated to:', iconData.name);
   };
 
   // Focus title input when editing starts

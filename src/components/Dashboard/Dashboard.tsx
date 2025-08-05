@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 import MainContent from '@/components/MainContent';
-import Footer from '@/components/Footer';
 import { MenuItemType, MenuItemData, TabType } from '@/components/Sidebar';
 
 export default function Dashboard() {
@@ -15,8 +14,8 @@ export default function Dashboard() {
 
   const handleTabChange = (tabId: TabType) => {
     setActiveTab(tabId);
-    // Reset selected menu when tab changes
-    setSelectedMenu(undefined);
+    // Don't reset selectedMenu - let the Sidebar's useEffect handle setting the initial menu
+    // This prevents glitches and ensures proper menu activation
   };
 
   return (
@@ -35,9 +34,6 @@ export default function Dashboard() {
             {/* Main Content */}
             <MainContent selectedMenu={selectedMenu} />
           </div>
-
-          {/* Footer */}
-          <Footer />
         </div>
       </div>
     </div>

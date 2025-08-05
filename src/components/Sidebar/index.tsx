@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FolderIcon, 
   FileIcon, 
@@ -72,9 +72,9 @@ const getTabSections = (tabId: TabType): SectionData[] => {
       { id: 'ai', title: 'AI', icon: <AIIcon /> },
           ],
           isCollapsed: false
-        }
-      ];
-    
+  }
+];
+
     case 'company':
       return [
         {
@@ -166,6 +166,7 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
   const [sectionsData, setSectionsData] = useState<Record<TabType, SectionData[]>>({});
   const [activeMenu, setActiveMenu] = useState<MenuItemType>('style-guide');
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
+  const initialMenuSetRef = useRef(false);
 
   // Initialize or get sections for the current tab
   const getCurrentSections = (): SectionData[] => {
@@ -189,13 +190,15 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
 
   // Set initial active menu when tab changes or component mounts
   useEffect(() => {
-    const currentSections = getCurrentSections();
-    if (currentSections.length > 0 && currentSections[0].items.length > 0) {
+    const currentSections = sectionsData[activeTab] || getTabSections(activeTab);
+    if (currentSections.length > 0 && currentSections[0].items.length > 0 && !initialMenuSetRef.current) {
       const firstMenuItem = currentSections[0].items[0];
+      console.log('Setting initial menu to:', firstMenuItem.id);
       setActiveMenu(firstMenuItem.id);
       onMenuChange?.(firstMenuItem.id, firstMenuItem);
+      initialMenuSetRef.current = true;
     }
-  }, [activeTab, onMenuChange]);
+  }, [activeTab, onMenuChange, sectionsData]);
 
   const toggleSection = (sectionId: string) => {
     setSectionsData(prev => ({
@@ -212,14 +215,13 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
     switch (action) {
       case 'edit':
         // Handle edit functionality
-        console.log('Edit item:', itemId);
         break;
       case 'duplicate':
         // Handle duplicate functionality
         const sectionIndex = sections.findIndex(s => s.id === sectionId);
         const itemIndex = sections[sectionIndex].items.findIndex(item => item.id === itemId);
         const originalItem = sections[sectionIndex].items[itemIndex];
-        
+
         const newItem = {
           ...originalItem,
           id: `${originalItem.id}-copy-${Date.now()}`,
@@ -244,7 +246,6 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
         break;
       case 'changeIcon':
         // Handle change icon functionality
-        console.log('Change icon for item:', itemId);
         break;
       case 'delete':
         // Handle delete functionality
@@ -274,9 +275,9 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
   };
 
   return (
-    <div className="bg-[#191919] w-[240px] h-screen flex flex-col border-r border-neutral-800">
+    <div className="bg-[#191919] w-[240px] min-h-screen flex flex-col border-r border-neutral-800">
       {/* Sidebar Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 pb-2">
         {sections.map((section) => (
           <div key={section.id} className="mb-4">
             {/* Section Header */}
@@ -286,7 +287,7 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
               onMouseLeave={() => setHoveredSection(null)}
             >
               {/* Container with same padding as menu items */}
-              <div className="flex items-center justify-between w-full pb-[5.25px] pl-[2px] pr-[4px] pt-[4.25px]">
+              <div className="flex items-center w-full pb-[5.25px] pl-[2px] pr-[4px] pt-[4.25px]">
                 {/* Drag Handle - appears on left when hovered */}
                 <div
                   className={`flex items-center justify-center w-3 h-3 cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300 transition-opacity duration-300 ease-in-out mr-1 ${
@@ -301,15 +302,15 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
                   <DragHandleIcon />
                 </div>
 
-                {/* Section Title and Chevron */}
+                {/* Section Title and Chevron - Now properly left-aligned */}
                 <button
                   onClick={() => toggleSection(section.id)}
                   className="flex items-center justify-between w-full"
                 >
-                  <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                  <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider text-left">
                     {section.title}
                   </h3>
-                  <div className={`transition-transform duration-200 ${
+                  <div className={`transition-transform duration-300 ease-in-out ${
                     section.isCollapsed ? '-rotate-90' : 'rotate-0'
                   }`}>
                     <ChevronIcon />
@@ -318,8 +319,10 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
               </div>
             </div>
 
-            {/* Section Items */}
-            {!section.isCollapsed && (
+            {/* Section Items with smooth animation */}
+            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              section.isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1000px] opacity-100'
+            }`}>
               <div className="space-y-1">
                 {section.items.map((item) => (
                   <MenuItem 
@@ -341,28 +344,32 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
                     onDrop={(e) => {
                       e.preventDefault();
                       const draggedId = e.dataTransfer.getData('text/plain');
-                      console.log('Dropped:', draggedId, 'onto:', item.id);
+                      // TODO: Implement drag and drop reordering
+                      if (draggedId) {
+                        // Handle reordering logic here
+                      }
                     }}
                   />
                 ))}
               </div>
-            )}
+            </div>
           </div>
         ))}
+
+        {/* Add Section Button - Positioned right after last section */}
+        <div className="mt-2 pt-2">
+          <div className="border-t border-neutral-800 mx-2"></div>
+          <div className="mt-4">
+            <button
+              onClick={addNewSection}
+              className="flex items-center w-full px-3 py-2 text-sm text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-md transition-all duration-200"
+            >
+              <PlusIcon />
+              <span className="ml-2">Add section</span>
+            </button>
+          </div>
         </div>
-
-      {/* Add Section Button */}
-      <div className="p-4 border-t border-neutral-800">
-        <button
-          onClick={addNewSection}
-          className="flex items-center w-full px-3 py-2 text-sm text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-md transition-all duration-200"
-        >
-          <PlusIcon />
-          <span className="ml-2">Add section</span>
-        </button>
       </div>
-
-
     </div>
   );
 } 

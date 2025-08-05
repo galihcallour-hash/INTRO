@@ -134,6 +134,20 @@ export default function Navigation({ onTabChange }: { onTabChange?: (tabId: TabT
     return 'none';
   };
 
+  // Determine if Add New Menu button should shift
+  const getAddMenuShiftDirection = (): 'right' | 'none' => {
+    if (!hoveredTab) return 'none';
+    
+    const hoveredIndex = tabs.findIndex(tab => tab.id === hoveredTab);
+    
+    // If any tab is hovered, Add New Menu should shift right
+    if (hoveredIndex >= 0) {
+      return 'right';
+    }
+    
+    return 'none';
+  };
+
   return (
     <div className="flex flex-row h-[38.5px] items-center px-7 relative w-full">
       <div className="absolute border-b border-neutral-800/30 inset-0 pointer-events-none" />
@@ -155,10 +169,15 @@ export default function Navigation({ onTabChange }: { onTabChange?: (tabId: TabT
         ))}
         
         {/* Add New Menu Button */}
-        <div className="flex h-[38.5px] items-start transition-transform duration-300 ease-out mr-0">
+        <div 
+          className="flex h-[38.5px] items-start transition-transform duration-300 ease-out mr-0"
+          style={{
+            transform: getAddMenuShiftDirection() === 'right' ? 'translateX(8px)' : 'translateX(0px)'
+          }}
+        >
           <button
             onClick={handleAddNewMenu}
-            className="flex flex-row h-[38.5px] items-center relative transition-all duration-200 rounded-t-md pl-1 pr-2 cursor-pointer pb-[10.5px] pt-[9.5px] hover:bg-neutral-800/20"
+            className="flex flex-row h-[38.5px] items-center relative transition-all duration-200 rounded-t-md pl-1 pr-2 cursor-pointer pb-[10.5px] pt-[9.5px]"
           >
             <div className="flex items-center justify-center h-3 w-5 pr-1">
               <div className="transition-all duration-200 opacity-75 hover:opacity-100">
