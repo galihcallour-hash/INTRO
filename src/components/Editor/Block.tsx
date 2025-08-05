@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { PlusIcon, DragHandleIcon } from '../icons';
 import TextFormatter from './TextFormatter';
 
@@ -295,12 +296,18 @@ export default function Block({
         `}</style>
       </div>
 
-      {/* Slash Menu */}
-      {showSlashMenu && (
+      {/* Slash Menu - Using Portal to prevent stacking context issues */}
+      {showSlashMenu && typeof document !== 'undefined' && createPortal(
         <div
           ref={slashMenuRef}
           data-slash-menu
-          className="absolute top-full left-0 mt-1 bg-neutral-800 border border-neutral-700 rounded-md shadow-lg z-50 min-w-[300px] max-h-[300px] overflow-y-auto"
+          className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg min-w-[300px] max-h-[300px] overflow-y-auto"
+          style={{
+            zIndex: 999999,
+            position: 'fixed',
+            left: contentRef.current ? contentRef.current.getBoundingClientRect().left : 0,
+            top: contentRef.current ? contentRef.current.getBoundingClientRect().bottom + 4 : 0,
+          }}
         >
           {slashMenuOptions.map((option) => (
             <button
@@ -314,7 +321,8 @@ export default function Block({
               </div>
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Text Formatting Toolbar */}

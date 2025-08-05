@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 interface TextFormatterProps {
   show: boolean;
@@ -66,10 +67,16 @@ export default function TextFormatter({ show, onClose, position }: TextFormatter
 
   if (!show) return null;
 
-  return (
+  const toolbarContent = (
     <div
       ref={toolbarRef}
-      className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg z-50 flex items-center px-2 py-1 space-x-1"
+      className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg flex items-center px-2 py-1 space-x-1"
+      style={{
+        zIndex: 999999,
+        position: 'fixed',
+        left: position ? `${position.x}px` : '0px',
+        top: position ? `${position.y - 50}px` : '0px',
+      }}
     >
       <button
         onClick={() => applyFormat('bold')}
@@ -101,4 +108,6 @@ export default function TextFormatter({ show, onClose, position }: TextFormatter
       </button>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(toolbarContent, document.body) : null;
 } 

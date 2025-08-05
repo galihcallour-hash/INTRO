@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CompanyIcon, DesignerIcon, DeveloperIcon, ContentIcon, HelpIcon, FileIcon, FolderIcon, ImageIcon, LayersIcon } from '../icons';
 
 interface AddTabModalProps {
@@ -47,12 +48,24 @@ export default function AddTabModal({ isOpen, onClose, onCreateTab }: AddTabModa
     onClose();
   };
 
-  return (
+  const modalContent = (
     <div 
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/30 flex items-center justify-center p-4"
       onClick={handleOverlayClick}
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 999999,
+        backdropFilter: 'blur(1px)'
+      }}
     >
-      <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+      <div className="bg-neutral-800 border border-neutral-700 rounded-lg p-6 max-w-md w-full shadow-xl">
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-white mb-2">Add New Tab</h3>
           <p className="text-neutral-300 text-sm">
@@ -126,4 +139,6 @@ export default function AddTabModal({ isOpen, onClose, onCreateTab }: AddTabModa
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : null;
 } 

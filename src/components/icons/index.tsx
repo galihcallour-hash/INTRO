@@ -114,6 +114,13 @@ export const EditIcon = () => (
   </svg>
 );
 
+export const CopyIcon = () => (
+  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 00-1 1v4a1 1 0 01-2 0V6a3 3 0 013-3h2a3 3 0 013 3v6a3 3 0 01-3 3H9a3 3 0 01-3-3V6z" />
+    <path d="M6 7a1 1 0 00-1 1v6a1 1 0 001 1h6a1 1 0 001-1V8a1 1 0 00-1-1H6z" />
+  </svg>
+);
+
 export const DeleteIcon = () => (
   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
     <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />

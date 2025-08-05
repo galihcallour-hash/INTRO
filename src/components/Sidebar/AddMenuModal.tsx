@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { CloseIcon, FolderIcon, FileIcon, PageIcon, ImageIcon, LayersIcon, DesignIcon, SystemIcon, FlowIcon, AIIcon } from '../icons';
 
 interface AddMenuModalProps {
@@ -80,8 +81,22 @@ export default function AddMenuModal({ isOpen, onClose, onCreateMenu }: AddMenuM
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+  const modalContent = (
+    <div 
+      className="fixed inset-0 bg-black/30 flex items-center justify-center p-4"
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 999999,
+        backdropFilter: 'blur(1px)'
+      }}
+    >
       <div className="bg-neutral-800 rounded-lg shadow-xl p-6 w-96 max-w-[90vw]">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -109,9 +124,18 @@ export default function AddMenuModal({ isOpen, onClose, onCreateMenu }: AddMenuM
                 </div>
               </button>
 
-              {/* Icon Dropdown Menu */}
-              {showIconDropdown && (
-                <div className="absolute top-full left-0 mt-1 bg-neutral-700 border border-neutral-600 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
+              {/* Icon Dropdown Menu - Using Portal to prevent stacking context issues */}
+              {showIconDropdown && typeof document !== 'undefined' && createPortal(
+                <div 
+                  className="fixed bg-neutral-700 border border-neutral-600 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                  style={{
+                    zIndex: 999999,
+                    position: 'fixed',
+                    left: dropdownRef.current?.querySelector('button')?.getBoundingClientRect().left || 0,
+                    top: (dropdownRef.current?.querySelector('button')?.getBoundingClientRect().bottom || 0) + 4,
+                    minWidth: '200px'
+                  }}
+                >
                   {availableIcons.map((icon) => (
                     <button
                       key={icon.id}
@@ -122,7 +146,8 @@ export default function AddMenuModal({ isOpen, onClose, onCreateMenu }: AddMenuM
                       <span className="text-sm">{icon.name}</span>
                     </button>
                   ))}
-                </div>
+                </div>,
+                document.body
               )}
             </div>
 
@@ -160,4 +185,7 @@ export default function AddMenuModal({ isOpen, onClose, onCreateMenu }: AddMenuM
       </div>
     </div>
   );
+
+  // Render modal at document root to avoid stacking context issues
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : null;
 } 

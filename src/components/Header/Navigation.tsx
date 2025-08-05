@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CompanyIcon, DesignerIcon, DeveloperIcon, ContentIcon, HelpIcon, PlusIcon } from '../icons';
 import NavigationTab from './NavigationTab';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
@@ -23,7 +23,7 @@ const initialTabs: TabData[] = [
   { id: 'help', icon: <HelpIcon />, label: 'Help', deletable: true },
 ];
 
-export default function Navigation() {
+export default function Navigation({ onTabChange }: { onTabChange?: (tabId: TabType) => void }) {
   const [tabs, setTabs] = useState<TabData[]>(initialTabs);
   const [activeTab, setActiveTab] = useState<TabType>('designer');
   const [hoveredTab, setHoveredTab] = useState<TabType | null>(null);
@@ -33,6 +33,7 @@ export default function Navigation() {
 
   const handleTabClick = (tabId: TabType) => {
     setActiveTab(tabId);
+    onTabChange?.(tabId);
     console.log('Switched to tab:', tabId);
   };
 
@@ -62,6 +63,7 @@ export default function Navigation() {
     if (activeTab === tabToDelete.id) {
       const firstAvailableTab = newTabs.find(tab => tab.deletable) || newTabs[0];
       setActiveTab(firstAvailableTab.id);
+      onTabChange?.(firstAvailableTab.id);
     }
     
     console.log('Deleted tab:', tabToDelete.id);
@@ -88,6 +90,7 @@ export default function Navigation() {
 
     setTabs(prevTabs => [...prevTabs, newTab]);
     setActiveTab(newTabId);
+    onTabChange?.(newTabId);
     console.log('Created new tab:', newTab);
   };
 
@@ -102,6 +105,11 @@ export default function Navigation() {
   const handleTabHover = (tabId: TabType | null) => {
     setHoveredTab(tabId);
   };
+
+  // Notify parent of initial active tab
+  useEffect(() => {
+    onTabChange?.(activeTab);
+  }, [onTabChange, activeTab]);
 
   const handleTabLabelChange = (tabId: TabType, newLabel: string) => {
     setTabs(prevTabs =>
@@ -141,13 +149,13 @@ export default function Navigation() {
             canDelete={canDeleteTab(tab.id)}
             onHover={(isHovered: boolean) => handleTabHover(isHovered ? tab.id : null)}
             shiftDirection={getTabShiftDirection(tab.id, index)}
-            isLastTab={index === tabs.length - 1}
+            isLastTab={index === tabs.length - 0}
             onLabelChange={(newLabel: string) => handleTabLabelChange(tab.id, newLabel)}
           />
         ))}
         
         {/* Add New Menu Button */}
-        <div className="flex h-[38.5px] items-start transition-transform duration-300 ease-out mr-1">
+        <div className="flex h-[38.5px] items-start transition-transform duration-300 ease-out mr-0">
           <button
             onClick={handleAddNewMenu}
             className="flex flex-row h-[38.5px] items-center relative transition-all duration-200 rounded-t-md pl-1 pr-2 cursor-pointer pb-[10.5px] pt-[9.5px] hover:bg-neutral-800/20"

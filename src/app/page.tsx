@@ -1,40 +1,29 @@
 'use client';
 
-import { useState } from 'react';
-import Header from '@/components/Header';
-import Sidebar from '@/components/Sidebar';
-import MainContent from '@/components/MainContent';
-import Footer from '@/components/Footer';
-import { MenuItemType, MenuItemData } from '@/components/Sidebar';
+import React from 'react';
+import { AuthProvider, useAuth } from '@/components/Auth/AuthContext';
+import SignIn from '@/components/Auth/SignIn';
+import Dashboard from '@/components/Dashboard/Dashboard';
+
+function AppContent() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Show nothing while loading to prevent flash
+  if (isLoading) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
+    return <SignIn />;
+  }
+
+  return <Dashboard />;
+}
 
 export default function Home() {
-  const [selectedMenu, setSelectedMenu] = useState<MenuItemData | undefined>();
-
-  const handleMenuChange = (menuId: MenuItemType, menuData?: MenuItemData) => {
-    setSelectedMenu(menuData);
-  };
-
   return (
-    <div className="bg-white relative size-full min-h-screen">
-      {/* Background */}
-      <div className="absolute bg-neutral-950 left-0 right-0 top-0 min-h-screen">
-        <div className="h-screen relative w-full">
-          {/* Header */}
-          <Header />
-
-          {/* Main Content Container */}
-          <div className="flex flex-row items-start left-0 right-0 top-[95.5px] absolute">
-            {/* Sidebar */}
-            <Sidebar onMenuChange={handleMenuChange} />
-
-            {/* Main Content */}
-            <MainContent selectedMenu={selectedMenu} />
-          </div>
-
-          {/* Footer */}
-          <Footer />
-        </div>
-      </div>
-    </div>
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }

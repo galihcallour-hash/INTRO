@@ -1,25 +1,22 @@
-'use client';
-
-import { useState } from 'react';
-import MenuSection from './MenuSection';
-import MenuItem from './MenuItem';
-import AddMenuModal from './AddMenuModal';
+import React, { useState, useEffect } from 'react';
 import { 
-  FolderIcon, FileIcon, PageIcon, ImageIcon, LayersIcon,
-  DesignIcon, SystemIcon, FlowIcon, AIIcon, PlusIcon 
+  FolderIcon, 
+  FileIcon, 
+  PageIcon, 
+  ImageIcon, 
+  LayersIcon, 
+  DesignIcon, 
+  SystemIcon, 
+  FlowIcon, 
+  AIIcon,
+  ChevronIcon,
+  PlusIcon,
+  DragHandleIcon
 } from '../icons';
+import MenuItem from './MenuItem';
 
-export type MenuItemType = 
-  | 'folder-structure' 
-  | 'file-structure' 
-  | 'page-structure' 
-  | 'cover-thumbnail' 
-  | 'layer-convention'
-  | 'design-bank'
-  | 'design-system' 
-  | 'flow' 
-  | 'ai'
-  | string; // Allow dynamic menu IDs
+export type MenuItemType = string;
+export type TabType = 'company' | 'designer' | 'developer' | 'content' | 'help' | string;
 
 export interface MenuItemData {
   id: string;
@@ -31,23 +28,39 @@ export interface SectionData {
   id: string;
   title: string;
   items: MenuItemData[];
+  isCollapsed?: boolean;
 }
 
 interface SidebarProps {
+  activeTab?: TabType;
   onMenuChange?: (menuId: MenuItemType, menuData?: MenuItemData) => void;
 }
 
-const initialSections: SectionData[] = [
+// Different menu sections for different tabs
+const getTabSections = (tabId: TabType): SectionData[] => {
+  switch (tabId) {
+    case 'designer':
+      return [
+        {
+          id: 'design-principles',
+          title: 'DESIGN PRINCIPLES',
+          items: [
+            { id: 'design-process', title: 'Design Process', icon: <FlowIcon /> },
+            { id: 'style-guide', title: 'Style Guide', icon: <DesignIcon /> },
+          ],
+          isCollapsed: false
+        },
   {
     id: 'figma-governance',
     title: 'FIGMA GOVERNANCE',
     items: [
-      { id: 'folder-structure', title: 'Folder Name & Structure', icon: <FolderIcon /> },
+            { id: 'folder-name', title: 'Folder Name', icon: <FolderIcon /> },
       { id: 'file-structure', title: 'File Name & Structure', icon: <FileIcon /> },
       { id: 'page-structure', title: 'Page Name & Structure', icon: <PageIcon /> },
       { id: 'cover-thumbnail', title: 'Cover / Thumbnail', icon: <ImageIcon /> },
       { id: 'layer-convention', title: 'Layer Name Convention', icon: <LayersIcon /> },
-    ]
+          ],
+          isCollapsed: false
   },
   {
     id: 'design-resource',
@@ -57,234 +70,257 @@ const initialSections: SectionData[] = [
       { id: 'design-system', title: 'Design System', icon: <SystemIcon /> },
       { id: 'flow', title: 'Flow', icon: <FlowIcon /> },
       { id: 'ai', title: 'AI', icon: <AIIcon /> },
-    ]
+          ],
+          isCollapsed: false
+        }
+      ];
+    
+    case 'company':
+      return [
+        {
+          id: 'company-overview',
+          title: 'COMPANY OVERVIEW',
+          items: [
+            { id: 'mission-vision', title: 'Mission & Vision', icon: <DesignIcon /> },
+            { id: 'company-values', title: 'Company Values', icon: <FlowIcon /> },
+            { id: 'organization-chart', title: 'Organization Chart', icon: <SystemIcon /> },
+          ],
+          isCollapsed: false
+        },
+        {
+          id: 'policies',
+          title: 'POLICIES',
+          items: [
+            { id: 'hr-policies', title: 'HR Policies', icon: <FileIcon /> },
+            { id: 'code-of-conduct', title: 'Code of Conduct', icon: <PageIcon /> },
+            { id: 'security-policies', title: 'Security Policies', icon: <LayersIcon /> },
+          ],
+          isCollapsed: false
+        }
+      ];
+    
+    case 'developer':
+      return [
+        {
+          id: 'development-standards',
+          title: 'DEVELOPMENT STANDARDS',
+          items: [
+            { id: 'coding-standards', title: 'Coding Standards', icon: <FileIcon /> },
+            { id: 'git-workflow', title: 'Git Workflow', icon: <FlowIcon /> },
+            { id: 'code-review', title: 'Code Review', icon: <PageIcon /> },
+          ],
+          isCollapsed: false
+        },
+        {
+          id: 'technical-docs',
+          title: 'TECHNICAL DOCUMENTATION',
+          items: [
+            { id: 'api-docs', title: 'API Documentation', icon: <SystemIcon /> },
+            { id: 'architecture', title: 'Architecture', icon: <DesignIcon /> },
+            { id: 'deployment', title: 'Deployment Guide', icon: <LayersIcon /> },
+          ],
+          isCollapsed: false
+        }
+      ];
+    
+    case 'content':
+      return [
+        {
+          id: 'content-strategy',
+          title: 'CONTENT STRATEGY',
+          items: [
+            { id: 'brand-voice', title: 'Brand Voice', icon: <DesignIcon /> },
+            { id: 'content-guidelines', title: 'Content Guidelines', icon: <FileIcon /> },
+            { id: 'editorial-calendar', title: 'Editorial Calendar', icon: <PageIcon /> },
+          ],
+          isCollapsed: false
+        },
+        {
+          id: 'content-types',
+          title: 'CONTENT TYPES',
+          items: [
+            { id: 'blog-posts', title: 'Blog Posts', icon: <FlowIcon /> },
+            { id: 'social-media', title: 'Social Media', icon: <ImageIcon /> },
+            { id: 'marketing-copy', title: 'Marketing Copy', icon: <SystemIcon /> },
+          ],
+          isCollapsed: false
+        }
+      ];
+    
+    default:
+      return [
+        {
+          id: 'general',
+          title: 'GENERAL',
+          items: [
+            { id: 'overview', title: 'Overview', icon: <DesignIcon /> },
+            { id: 'getting-started', title: 'Getting Started', icon: <FlowIcon /> },
+          ],
+          isCollapsed: false
+        }
+      ];
   }
-];
+};
 
-export default function Sidebar({ onMenuChange }: SidebarProps) {
-  const [sections, setSections] = useState<SectionData[]>(initialSections);
-  const [activeMenu, setActiveMenu] = useState<MenuItemType>('folder-structure');
-  const [showAddMenuModal, setShowAddMenuModal] = useState(false);
-  const [currentSectionForNewMenu, setCurrentSectionForNewMenu] = useState<string | null>(null);
-  const [draggedItem, setDraggedItem] = useState<{type: 'section' | 'item', sectionId: string, itemId?: string} | null>(null);
+export default function Sidebar({ activeTab = 'designer', onMenuChange }: SidebarProps) {
+  const [sectionsData, setSectionsData] = useState<Record<TabType, SectionData[]>>({});
+  const [activeMenu, setActiveMenu] = useState<MenuItemType>('style-guide');
+  const [hoveredSection, setHoveredSection] = useState<string | null>(null);
+
+  // Initialize or get sections for the current tab
+  const getCurrentSections = (): SectionData[] => {
+    if (!sectionsData[activeTab]) {
+      const initialSections = getTabSections(activeTab);
+      setSectionsData(prev => ({
+        ...prev,
+        [activeTab]: initialSections
+      }));
+      return initialSections;
+    }
+    return sectionsData[activeTab];
+  };
+
+  const sections = getCurrentSections();
 
   const handleMenuClick = (menuData: MenuItemData) => {
     setActiveMenu(menuData.id);
     onMenuChange?.(menuData.id, menuData);
-    console.log('Selected menu:', menuData);
   };
 
-  const handleAddNewMenu = (sectionId: string) => {
-    setCurrentSectionForNewMenu(sectionId);
-    setShowAddMenuModal(true);
-  };
-
-  const handleCreateMenu = (iconType: string, name: string) => {
-    if (!currentSectionForNewMenu) return;
-    
-    const iconComponents = {
-      folder: <FolderIcon />,
-      file: <FileIcon />,
-      page: <PageIcon />,
-      image: <ImageIcon />,
-      layers: <LayersIcon />,
-      design: <DesignIcon />,
-      system: <SystemIcon />,
-      flow: <FlowIcon />,
-      ai: <AIIcon />
-    };
-
-    const newMenuItem: MenuItemData = {
-      id: `${name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
-      title: name,
-      icon: iconComponents[iconType as keyof typeof iconComponents] || <FolderIcon />
-    };
-
-    setSections(prevSections =>
-      prevSections.map(section =>
-        section.id === currentSectionForNewMenu
-          ? { ...section, items: [...section.items, newMenuItem] }
-          : section
-      )
-    );
-    
-    setShowAddMenuModal(false);
-    setCurrentSectionForNewMenu(null);
-  };
-
-  const handleAddSection = () => {
-    const newSection: SectionData = {
-      id: `section-${Date.now()}`,
-      title: `NEW SECTION ${sections.length + 1}`,
-      items: []
-    };
-    
-    setSections(prevSections => [...prevSections, newSection]);
-  };
-
-  const handleMenuItemRename = (sectionId: string, itemId: string, newTitle: string) => {
-    setSections(prevSections =>
-      prevSections.map(section =>
-        section.id === sectionId
-          ? {
-              ...section,
-              items: section.items.map(item =>
-                item.id === itemId ? { ...item, title: newTitle } : item
-              )
-            }
-          : section
-      )
-    );
-  };
-
-  const handleMenuItemChangeIcon = (sectionId: string, itemId: string, newIcon: React.ReactNode) => {
-    setSections(prevSections =>
-      prevSections.map(section =>
-        section.id === sectionId
-          ? {
-              ...section,
-              items: section.items.map(item =>
-                item.id === itemId ? { ...item, icon: newIcon } : item
-              )
-            }
-          : section
-      )
-    );
-  };
-
-  const handleMenuItemDuplicate = (sectionId: string, itemId: string) => {
-    setSections(prevSections =>
-      prevSections.map(section =>
-        section.id === sectionId
-          ? {
-              ...section,
-              items: [...section.items, ...section.items.filter(item => item.id === itemId).map(item => ({
-                ...item,
-                id: `${item.id}-copy-${Date.now()}`,
-                title: `${item.title} (Copy)`
-              }))]
-            }
-          : section
-      )
-    );
-  };
-
-  const handleMenuItemDelete = (sectionId: string, itemId: string) => {
-    setSections(prevSections =>
-      prevSections.map(section =>
-        section.id === sectionId
-          ? {
-              ...section,
-              items: section.items.filter(item => item.id !== itemId)
-            }
-          : section
-      )
-    );
-  };
-
-  // Drag and Drop handlers
-  const handleSectionDragStart = (sectionId: string) => (e: React.DragEvent) => {
-    setDraggedItem({ type: 'section', sectionId });
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleItemDragStart = (sectionId: string, itemId: string) => (e: React.DragEvent) => {
-    setDraggedItem({ type: 'item', sectionId, itemId });
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleSectionDrop = (targetSectionId: string) => (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!draggedItem) return;
-
-    if (draggedItem.type === 'section' && draggedItem.sectionId !== targetSectionId) {
-      // Reorder sections
-      setSections(prevSections => {
-        const draggedSection = prevSections.find(s => s.id === draggedItem.sectionId);
-        const targetIndex = prevSections.findIndex(s => s.id === targetSectionId);
-        
-        if (!draggedSection) return prevSections;
-        
-        const filteredSections = prevSections.filter(s => s.id !== draggedItem.sectionId);
-        const newSections = [...filteredSections];
-        newSections.splice(targetIndex, 0, draggedSection);
-        
-        return newSections;
-      });
+  // Set initial active menu when tab changes or component mounts
+  useEffect(() => {
+    const currentSections = getCurrentSections();
+    if (currentSections.length > 0 && currentSections[0].items.length > 0) {
+      const firstMenuItem = currentSections[0].items[0];
+      setActiveMenu(firstMenuItem.id);
+      onMenuChange?.(firstMenuItem.id, firstMenuItem);
     }
-    
-    setDraggedItem(null);
+  }, [activeTab, onMenuChange]);
+
+  const toggleSection = (sectionId: string) => {
+    setSectionsData(prev => ({
+      ...prev,
+      [activeTab]: prev[activeTab].map(section => 
+        section.id === sectionId 
+          ? { ...section, isCollapsed: !section.isCollapsed }
+          : section
+      )
+    }));
   };
 
-  const handleItemDrop = (targetSectionId: string, targetItemId: string) => (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!draggedItem || draggedItem.type !== 'item') return;
-
-    // Handle item reordering within same section or moving between sections
-    setSections(prevSections => {
-      const sourceSectionIndex = prevSections.findIndex(s => s.id === draggedItem.sectionId);
-      const targetSectionIndex = prevSections.findIndex(s => s.id === targetSectionId);
-      
-      if (sourceSectionIndex === -1 || targetSectionIndex === -1) return prevSections;
-      
-      const sourceSection = prevSections[sourceSectionIndex];
-      const targetSection = prevSections[targetSectionIndex];
-      
-      const draggedItemData = sourceSection.items.find(item => item.id === draggedItem.itemId);
-      if (!draggedItemData) return prevSections;
-      
-      const newSections = [...prevSections];
-      
-      if (draggedItem.sectionId === targetSectionId) {
-        // Reordering within same section
-        const targetItemIndex = targetSection.items.findIndex(item => item.id === targetItemId);
-        const filteredItems = sourceSection.items.filter(item => item.id !== draggedItem.itemId);
+  const handleDropdownAction = (action: string, itemId: string, sectionId: string) => {
+    switch (action) {
+      case 'edit':
+        // Handle edit functionality
+        console.log('Edit item:', itemId);
+        break;
+      case 'duplicate':
+        // Handle duplicate functionality
+        const sectionIndex = sections.findIndex(s => s.id === sectionId);
+        const itemIndex = sections[sectionIndex].items.findIndex(item => item.id === itemId);
+        const originalItem = sections[sectionIndex].items[itemIndex];
         
-        filteredItems.splice(targetItemIndex, 0, draggedItemData);
-        newSections[sourceSectionIndex] = { ...sourceSection, items: filteredItems };
-      } else {
-        // Moving between sections
-        const targetItemIndex = targetSection.items.findIndex(item => item.id === targetItemId);
-        
-        // Remove from source section
-        newSections[sourceSectionIndex] = {
-          ...sourceSection,
-          items: sourceSection.items.filter(item => item.id !== draggedItem.itemId)
+        const newItem = {
+          ...originalItem,
+          id: `${originalItem.id}-copy-${Date.now()}`,
+          title: `${originalItem.title} Copy`
         };
         
-        // Add to target section
-        const newTargetItems = [...targetSection.items];
-        newTargetItems.splice(targetItemIndex, 0, draggedItemData);
-        newSections[targetSectionIndex] = { ...targetSection, items: newTargetItems };
-      }
-      
-      return newSections;
-    });
-    
-    setDraggedItem(null);
+        setSectionsData(prev => ({
+          ...prev,
+          [activeTab]: prev[activeTab].map(section => 
+        section.id === sectionId
+          ? {
+              ...section,
+                  items: [
+                    ...section.items.slice(0, itemIndex + 1),
+                    newItem,
+                    ...section.items.slice(itemIndex + 1)
+                  ]
+            }
+          : section
+      )
+        }));
+        break;
+      case 'changeIcon':
+        // Handle change icon functionality
+        console.log('Change icon for item:', itemId);
+        break;
+      case 'delete':
+        // Handle delete functionality
+        setSectionsData(prev => ({
+          ...prev,
+          [activeTab]: prev[activeTab].map(section => 
+        section.id === sectionId
+              ? { ...section, items: section.items.filter(item => item.id !== itemId) }
+          : section
+      )
+        }));
+        break;
+    }
+  };
+
+  const addNewSection = () => {
+    const newSection: SectionData = {
+      id: `section-${Date.now()}`,
+      title: 'NEW SECTION',
+      items: [],
+      isCollapsed: false
+    };
+    setSectionsData(prev => ({
+      ...prev,
+      [activeTab]: [...prev[activeTab], newSection]
+    }));
   };
 
   return (
-    <div className="bg-neutral-900 flex flex-col h-[1200px] items-start justify-center sticky top-0 w-60 border-r border-neutral-800">
-      <div className="flex flex-col grow items-start justify-start overflow-clip p-[10.5px] relative w-full">
-        <div className="flex flex-col gap-[10.5px] grow items-start justify-start w-full">
-          
-          {/* Dynamic Sections */}
-          {sections.map((section, sectionIndex) => (
-            <div key={section.id} className={sectionIndex > 0 ? "pb-[3.5px] w-full" : "w-full"}>
-              <MenuSection 
-                title={section.title} 
-                onAddNewMenu={() => handleAddNewMenu(section.id)}
-                onDragStart={handleSectionDragStart(section.id)}
-                onDragOver={handleDragOver}
-                onDrop={handleSectionDrop(section.id)}
-                isDragging={draggedItem?.type === 'section' && draggedItem.sectionId === section.id}
-              >
+    <div className="bg-[#191919] w-[240px] h-screen flex flex-col border-r border-neutral-800">
+      {/* Sidebar Content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {sections.map((section) => (
+          <div key={section.id} className="mb-4">
+            {/* Section Header */}
+            <div 
+              className="flex items-center w-full mb-3 group"
+              onMouseEnter={() => setHoveredSection(section.id)}
+              onMouseLeave={() => setHoveredSection(null)}
+            >
+              {/* Container with same padding as menu items */}
+              <div className="flex items-center justify-between w-full pb-[5.25px] pl-[2px] pr-[4px] pt-[4.25px]">
+                {/* Drag Handle - appears on left when hovered */}
+                <div
+                  className={`flex items-center justify-center w-3 h-3 cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300 transition-opacity duration-300 ease-in-out mr-1 ${
+                    hoveredSection === section.id
+                      ? 'opacity-100' 
+                      : 'opacity-0 pointer-events-none'
+                  }`}
+                  draggable
+                  title="Drag to reorder section"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DragHandleIcon />
+                </div>
+
+                {/* Section Title and Chevron */}
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className="flex items-center justify-between w-full"
+                >
+                  <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+                    {section.title}
+                  </h3>
+                  <div className={`transition-transform duration-200 ${
+                    section.isCollapsed ? '-rotate-90' : 'rotate-0'
+                  }`}>
+                    <ChevronIcon />
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Section Items */}
+            {!section.isCollapsed && (
+              <div className="space-y-1">
                 {section.items.map((item) => (
                   <MenuItem 
                     key={item.id}
@@ -292,46 +328,41 @@ export default function Sidebar({ onMenuChange }: SidebarProps) {
                     title={item.title} 
                     isActive={activeMenu === item.id}
                     onClick={() => handleMenuClick(item)}
-                    onRename={(newTitle) => handleMenuItemRename(section.id, item.id, newTitle)}
-                    onChangeIcon={(newIcon) => handleMenuItemChangeIcon(section.id, item.id, newIcon)}
-                    onDuplicate={() => handleMenuItemDuplicate(section.id, item.id)}
-                    onDelete={() => handleMenuItemDelete(section.id, item.id)}
-                    onDragStart={handleItemDragStart(section.id, item.id)}
-                    onDragOver={handleDragOver}
-                    onDrop={handleItemDrop(section.id, item.id)}
-                    isDragging={draggedItem?.type === 'item' && draggedItem.itemId === item.id}
+                    onRename={() => handleDropdownAction('edit', item.id, section.id)}
+                    onChangeIcon={() => handleDropdownAction('changeIcon', item.id, section.id)}
+                    onDuplicate={() => handleDropdownAction('duplicate', item.id, section.id)}
+                    onDelete={() => handleDropdownAction('delete', item.id, section.id)}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', item.id);
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const draggedId = e.dataTransfer.getData('text/plain');
+                      console.log('Dropped:', draggedId, 'onto:', item.id);
+                    }}
                   />
                 ))}
-              </MenuSection>
-            </div>
-          ))}
-
-          {/* Add Section */}
-          <div 
-            className="flex flex-row h-7 items-center justify-center opacity-60 pb-0 pt-2 w-full cursor-pointer hover:opacity-80 transition-opacity duration-200"
-            onClick={handleAddSection}
-          >
-            <div className="absolute border-t border-neutral-800 inset-0 pointer-events-none" />
-            <div className="flex flex-row items-center justify-start">
-              <div className="flex flex-col h-[10.5px] items-start justify-start w-3.5 pr-[3.5px]">
-                <div className="flex flex-col items-start justify-center overflow-clip size-[10.5px] text-[#a1a1a1]">
-                  <PlusIcon />
-                </div>
               </div>
-              <div className="font-normal text-[#a1a1a1] text-[9.68px] leading-[14px] whitespace-pre">
-                Add section
-              </div>
-            </div>
+            )}
           </div>
+        ))}
         </div>
+
+      {/* Add Section Button */}
+      <div className="p-4 border-t border-neutral-800">
+        <button
+          onClick={addNewSection}
+          className="flex items-center w-full px-3 py-2 text-sm text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-md transition-all duration-200"
+        >
+          <PlusIcon />
+          <span className="ml-2">Add section</span>
+        </button>
       </div>
 
-      {/* Add Menu Modal */}
-      <AddMenuModal
-        isOpen={showAddMenuModal}
-        onClose={() => setShowAddMenuModal(false)}
-        onCreateMenu={handleCreateMenu}
-      />
+
     </div>
   );
 } 

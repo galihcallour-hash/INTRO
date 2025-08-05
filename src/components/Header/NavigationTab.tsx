@@ -118,7 +118,7 @@ export default function NavigationTab({
   };
 
   return (
-    <div className={`flex h-[38.5px] items-start transition-transform duration-300 ease-out mr-1`} 
+    <div className={`flex h-[38.5px] items-start transition-transform duration-300 ease-out mr-0`} 
     style={{ transform: getTransform() }}>
       <div
         className="relative group flex flex-row items-center"

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ThreeDotsIcon, EditIcon, ImageIcon, FileIcon, DeleteIcon, DragHandleIcon } from '../icons';
+import { createPortal } from 'react-dom';
+import { ThreeDotsIcon, EditIcon, ImageIcon, CopyIcon, DeleteIcon, DragHandleIcon } from '../icons';
 
 interface MenuItemProps {
   icon: React.ReactNode;
@@ -43,6 +44,7 @@ export default function MenuItem({
   const handleDropdownAction = (action: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDropdown(false);
+    setIsHovered(false); // Reset hover state when dropdown closes
     
     switch(action) {
       case 'rename':
@@ -69,6 +71,7 @@ export default function MenuItem({
         
         if (isOutsideDropdown && isNotThreeDotsButton) {
           setShowDropdown(false);
+          setIsHovered(false); // Reset hover state when clicking outside
         }
       }
     };
@@ -83,99 +86,122 @@ export default function MenuItem({
 
   return (
     <div 
-      className={`flex flex-row items-center justify-center w-full relative transition-opacity duration-200 ${
+      className={`flex flex-row items-center w-full relative transition-all duration-300 ease-in-out ${
         isDragging ? 'opacity-50' : 'opacity-100'
       }`}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseLeave={() => {
+        if (!showDropdown) {
+          setIsHovered(false);
+        }
+      }}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      {/* Drag Handle - appears on hover */}
-      {isHovered && (
-        <div className="absolute left-1 z-10">
-          <div
-            className="flex items-center justify-center pr-5 mr-4 cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300 transition-colors duration-200"
-            draggable
-            onDragStart={onDragStart}
-          >
-            <DragHandleIcon />
-          </div>
-        </div>
-      )}
-
-      <button 
-        onClick={onClick}
-        className={`flex flex-row grow items-center justify-start pb-[5.25px] pl-[12px] pr-[16px] pt-[4.25px] rounded-[6px] transition-all duration-200 hover:bg-[rgba(250,250,250,0.05)] cursor-pointer ${
+      {/* Main button container that includes all elements */}
+      <div 
+        className={`flex flex-row items-center w-full pb-[5.25px] pl-[8px] pr-[4px] pt-[4.25px] rounded-[6px] transition-all duration-300 ease-in-out hover:bg-[rgba(250,250,250,0.05)] cursor-pointer ${
           isActive ? 'bg-[rgba(250,250,250,0.1)]' : ''
         }`}
+        onClick={onClick}
       >
-        <div className="flex flex-row grow items-center justify-start">
+        {/* Drag Handle - appears on left when hovered only */}
+        <div
+          className={`flex items-center justify-center w-3 h-3 cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300 transition-opacity duration-300 ease-in-out mr-1 ${
+            (isHovered || showDropdown) 
+              ? 'opacity-100' 
+              : 'opacity-0 pointer-events-none'
+          }`}
+          draggable
+          onDragStart={onDragStart}
+          title="Drag to reorder"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DragHandleIcon />
+        </div>
+
+        {/* Main button content */}
+        <div className="flex flex-row grow items-center justify-start transition-all duration-300 ease-in-out">
+          {/* Icon */}
           <div className="flex flex-col h-3.5 items-start justify-start w-[21px] pr-1">
-            <div className={`flex flex-col items-start justify-center overflow-clip size-3.5 transition-colors duration-200 ${
+            <div className={`flex flex-col items-start justify-center overflow-clip size-3.5 transition-colors duration-300 ease-in-out ${
               isActive ? 'text-neutral-50' : 'text-[#a1a1a1] hover:text-neutral-300'
             }`}>
               {icon}
             </div>
           </div>
+          
+          {/* Text */}
           <div className="flex flex-col grow items-start justify-start">
-            <div className={`font-normal text-[11.531px] leading-[17.5px] w-full text-left transition-colors duration-200 ${
+            <div className={`font-normal text-[11.531px] leading-[17.5px] w-full text-left transition-colors duration-300 ease-in-out ${
               isActive ? 'text-neutral-50' : 'text-[#a1a1a1] hover:text-neutral-300'
             }`}>
               {title}
             </div>
           </div>
         </div>
-      </button>
 
-      {/* Three dots menu - appears on hover */}
-      {isHovered && (
-        <div className="absolute right-3 z-10">
+        {/* Three dots menu - appears on right when hovered only */}
+        <div className={`flex items-center justify-center w-6 transition-opacity duration-300 ease-in-out ${
+          (isHovered || showDropdown)
+            ? 'opacity-100'
+            : 'opacity-0 pointer-events-none'
+        }`}>
           <button
             ref={threeDotsRef}
             onClick={toggleDropdown}
-            className="flex items-center justify-center p-1 hover:bg-neutral-700/50 rounded transition-colors duration-200"
+            className="flex items-center justify-center p-1 hover:bg-neutral-700/50 rounded transition-all duration-200 ease-in-out"
           >
-            <div className="w-3 h-3 text-neutral-400 hover:text-neutral-200">
+            <div className="w-3 h-3 text-neutral-400 hover:text-neutral-200 transition-colors duration-200 ease-in-out">
               <ThreeDotsIcon />
             </div>
           </button>
           
-          {/* Dropdown Menu */}
-          {showDropdown && (
-            <div ref={dropdownRef} className="absolute right-0 top-full mt-1 bg-neutral-800 border border-neutral-700 rounded-md shadow-lg z-50 min-w-[130px]">
+          {/* Dropdown Menu - Using Portal to prevent stacking context issues */}
+          {showDropdown && typeof document !== 'undefined' && createPortal(
+            <div 
+              ref={dropdownRef} 
+              className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg min-w-[130px] animate-in fade-in-0 zoom-in-95 duration-200"
+              style={{
+                zIndex: 999999,
+                position: 'fixed',
+                left: threeDotsRef.current ? threeDotsRef.current.getBoundingClientRect().right - 130 : 0,
+                top: threeDotsRef.current ? threeDotsRef.current.getBoundingClientRect().bottom + 4 : 0,
+              }}
+            >
               <button
                 onClick={(e) => handleDropdownAction('rename', e)}
-                className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors duration-200"
+                className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors duration-200 ease-in-out"
               >
                 <EditIcon />
                 <span className="ml-2">Rename</span>
               </button>
               <button
                 onClick={(e) => handleDropdownAction('changeIcon', e)}
-                className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors duration-200"
+                className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors duration-200 ease-in-out"
               >
                 <ImageIcon />
                 <span className="ml-2">Change Icon</span>
               </button>
               <button
                 onClick={(e) => handleDropdownAction('duplicate', e)}
-                className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors duration-200"
+                className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors duration-200 ease-in-out"
               >
-                <FileIcon />
+                <CopyIcon />
                 <span className="ml-2">Duplicate</span>
               </button>
               <button
                 onClick={(e) => handleDropdownAction('delete', e)}
-                className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors duration-200"
+                className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 hover:text-red-400 transition-colors duration-200 ease-in-out"
               >
                 <DeleteIcon />
                 <span className="ml-2">Delete</span>
               </button>
-            </div>
+            </div>,
+            document.body
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 } 

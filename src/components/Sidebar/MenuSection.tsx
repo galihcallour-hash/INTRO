@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronIcon, ThreeDotsIcon, EditIcon, PlusIcon, DeleteIcon, ReorderIcon } from '../icons';
 
 interface MenuSectionProps {
@@ -34,6 +35,7 @@ export default function MenuSection({
   const handleDropdownAction = (action: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setShowDropdown(false);
+    setIsHovered(false); // Reset hover state when dropdown closes
     
     switch(action) {
       case 'edit':
@@ -60,6 +62,7 @@ export default function MenuSection({
         
         if (isOutsideDropdown && isNotThreeDotsButton) {
           setShowDropdown(false);
+          setIsHovered(false); // Reset hover state when clicking outside
         }
       }
     };
@@ -77,7 +80,6 @@ export default function MenuSection({
       <div 
         className="flex flex-row items-center justify-start pb-[7px] pl-3.5 pr-0 pt-0 w-full cursor-pointer"
         onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         onClick={toggleExpanded}
       >
         <div className="flex flex-row grow items-center justify-between">
@@ -89,8 +91,8 @@ export default function MenuSection({
             </div>
           </div>
           <div className="flex flex-row items-center justify-start pl-[21px] relative">
-            {/* Three dots menu - appears on hover */}
-            {isHovered && (
+            {/* Three dots menu - appears on hover or when dropdown is open */}
+            {(isHovered || showDropdown) && (
               <div className="relative">
                 <button
                   ref={threeDotsRef}
@@ -102,9 +104,18 @@ export default function MenuSection({
                   </div>
                 </button>
                 
-                {/* Dropdown Menu */}
-                {showDropdown && (
-                  <div ref={dropdownRef} className="absolute right-0 top-full mt-1 bg-neutral-800 border border-neutral-700 rounded-md shadow-lg z-50 min-w-[140px]">
+                {/* Dropdown Menu - Using Portal to prevent stacking context issues */}
+                {showDropdown && typeof document !== 'undefined' && createPortal(
+                  <div 
+                    ref={dropdownRef} 
+                    className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg min-w-[140px]"
+                    style={{
+                      zIndex: 999999,
+                      position: 'fixed',
+                      left: threeDotsRef.current ? threeDotsRef.current.getBoundingClientRect().right - 140 : 0,
+                      top: threeDotsRef.current ? threeDotsRef.current.getBoundingClientRect().bottom + 4 : 0,
+                    }}
+                  >
                     <button
                       onClick={(e) => handleDropdownAction('edit', e)}
                       className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 transition-colors duration-200"
@@ -133,7 +144,8 @@ export default function MenuSection({
                       <ReorderIcon />
                       <span className="ml-2">Reorder</span>
                     </button>
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
             )}
