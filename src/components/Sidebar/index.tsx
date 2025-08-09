@@ -275,19 +275,19 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
   };
 
   return (
-    <div className="bg-[#191919] w-[240px] min-h-screen flex flex-col border-r border-neutral-800">
-      {/* Sidebar Content */}
-      <div className="flex-1 overflow-y-auto p-4 pb-2">
+    <div className="bg-[#191919] w-[240px] h-full flex flex-col border-r border-neutral-800 md:w-[240px] sm:w-[200px]">
+      {/* Sidebar Content - Scrollable only when needed */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 pb-2 sm:p-3">
         {sections.map((section) => (
-          <div key={section.id} className="mb-4">
+          <div key={section.id} className="mb-4 sm:mb-3">
             {/* Section Header */}
             <div 
-              className="flex items-center w-full mb-3 group"
+              className="flex items-center w-full mb-3 sm:mb-2 group"
               onMouseEnter={() => setHoveredSection(section.id)}
               onMouseLeave={() => setHoveredSection(null)}
             >
               {/* Container with same padding as menu items */}
-              <div className="flex items-center w-full pb-[5.25px] pl-[2px] pr-[4px] pt-[4.25px]">
+              <div className="flex items-center w-full pb-[5.25px] pl-[2px] pr-[4px] pt-[4.25px] sm:pb-[4px] sm:pt-[3px]">
                 {/* Drag Handle - appears on left when hovered */}
                 <div
                   className={`flex items-center justify-center w-3 h-3 cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300 transition-opacity duration-300 ease-in-out mr-1 ${
@@ -307,7 +307,7 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
                   onClick={() => toggleSection(section.id)}
                   className="flex items-center justify-between w-full"
                 >
-                  <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider text-left">
+                  <h3 className="text-xs font-medium text-neutral-400 uppercase tracking-wider text-left sm:text-[10px]">
                     {section.title}
                   </h3>
                   <div className={`transition-transform duration-300 ease-in-out ${
@@ -323,7 +323,7 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
               section.isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1000px] opacity-100'
             }`}>
-              <div className="space-y-1">
+              <div className="space-y-1 sm:space-y-0.5">
                 {section.items.map((item) => (
                   <MenuItem 
                     key={item.id}
@@ -357,15 +357,15 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange }: Sideba
         ))}
 
         {/* Add Section Button - Positioned right after last section */}
-        <div className="mt-2 pt-2">
+        <div className="mt-2 pt-2 sm:mt-1 sm:pt-1">
           <div className="border-t border-neutral-800 mx-2"></div>
-          <div className="mt-4">
+          <div className="mt-4 sm:mt-3">
             <button
               onClick={addNewSection}
-              className="flex items-center w-full px-3 py-2 text-sm text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-md transition-all duration-200"
+              className="flex items-center w-full px-3 py-2 text-sm text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50 rounded-md transition-all duration-200 sm:px-2 sm:py-1.5 sm:text-xs"
             >
               <PlusIcon />
-              <span className="ml-2">Add section</span>
+              <span className="ml-2 sm:ml-1.5">Add section</span>
             </button>
           </div>
         </div>

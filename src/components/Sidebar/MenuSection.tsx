@@ -162,10 +162,8 @@ export default function MenuSection({
         </div>
       </div>
 
-      {/* Menu Items - with accordion animation */}
-      <div className={`flex flex-col gap-[1.8px] items-start justify-start w-full transition-all duration-300 ease-in-out overflow-hidden ${
-        isExpanded ? 'max-h-[800px] opacity-100 pb-[10px]' : 'max-h-0 opacity-0 pb-0'
-      }`}>
+      {/* Menu Items - simplified without conflicting animations */}
+      <div className="flex flex-col gap-[1.8px] items-start justify-start w-full">
         {children}
       </div>
     </div>

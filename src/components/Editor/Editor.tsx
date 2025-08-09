@@ -285,6 +285,25 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
         const editableElement = blockElement.querySelector('[contenteditable="true"]') as HTMLElement;
         if (editableElement) {
           editableElement.focus();
+          
+          // Simple approach: move cursor to end
+          setTimeout(() => {
+            if (document.execCommand) {
+              // Use execCommand to move cursor to end
+              document.execCommand('selectAll', false, undefined);
+              document.execCommand('collapseToEnd', false, undefined);
+            } else {
+              // Fallback: manual range setting
+              const range = document.createRange();
+              const selection = window.getSelection();
+              if (selection) {
+                range.selectNodeContents(editableElement);
+                range.collapse(false); // false = end
+                selection.removeAllRanges();
+                selection.addRange(range);
+              }
+            }
+          }, 10);
         }
       }
     }
@@ -293,7 +312,7 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
   return (
     <div
       ref={editorRef}
-      className="max-w-4xl mx-auto px-8 py-8 min-h-screen text-left"
+      className="max-w-4xl mx-auto py-2 min-h-screen text-left"
       onClick={(e) => {
         // Close slash menu when clicking outside
         if (slashMenuState.isVisible) {

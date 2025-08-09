@@ -40,7 +40,6 @@ export default function Block({
   onContentChange,
   onTypeChange,
   onAddBlock,
-
   onFocus,
   onKeyDown,
   onDragStart,
@@ -152,10 +151,11 @@ export default function Block({
 
   const renderContent = () => {
     const getPlaceholder = () => {
-      if (index === 0 && block.content === '') {
-        return "Write, press 'space' for AI, '/' for commands...";
+      // Only show placeholder on empty blocks that are currently selected/focused
+      if (block.content === '' && isSelected) {
+        return "Write what you want to write today...";
       }
-      return "Type '/' for commands";
+      return undefined;
     };
 
     const commonProps = {
@@ -166,8 +166,8 @@ export default function Block({
       onKeyDown: handleKeyDown,
       onFocus: handleFocus,
       onMouseUp: handleMouseUp,
-      className: `outline-none min-h-[1.5rem] ${isSelected ? 'ring-1 ring-blue-500' : ''}`,
-      'data-placeholder': block.content === '' ? getPlaceholder() : undefined
+      className: `outline-none min-h-[1.5rem] focus:outline-none`,
+      'data-placeholder': getPlaceholder()
     };
 
     switch (block.type) {
@@ -258,9 +258,14 @@ export default function Block({
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, block.id)}
     >
-      {/* Hover Controls */}
-      {isHovered && !isDragging && (
-        <div className="absolute left-[-50px] top-1 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      {/* Extended Hover Area - Invisible extension to the left */}
+      <div className="absolute left-[-80px] top-0 bottom-0 w-[80px] pointer-events-auto"></div>
+      
+      {/* Action Controls - Show when block is selected or hovered */}
+      {(isSelected || isHovered) && !isDragging && (
+        <div className={`absolute left-[-44px] top-1 flex items-center space-x-1 transition-opacity duration-200 ${
+          isSelected ? 'opacity-100' : 'opacity-70'
+        }`}>
           {/* Add Block Button */}
           <button
             onClick={handleAddBlock}

@@ -1,18 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
@@ -23,4 +16,76 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Ensure consistent dark theme */
+* {
+  box-sizing: border-box;
+}
+
+/* Prevent white flash on page load */
+html {
+  background-color: #0a0a0a;
+}
+
+/* Placeholder styling for editor */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #6b7280;
+  pointer-events: none;
+  font-style: normal;
+  opacity: 0.6;
+}
+
+[contenteditable]:focus::before {
+  opacity: 0.4;
+}
+
+/* Remove focus outline and selection styling */
+[contenteditable]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #505050;
+}
+
+/* Input cursor styling for better visibility */
+input[type="text"] {
+  caret-color: #f5f5f5 !important;
+}
+
+input[type="text"]:focus {
+  caret-color: #f5f5f5 !important;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure cursor blinks */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+input[type="text"]:focus {
+  animation: none; /* Let browser handle cursor blinking */
 }

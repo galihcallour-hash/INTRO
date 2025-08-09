@@ -19,21 +19,20 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="bg-white relative size-full min-h-screen">
-      {/* Background */}
-      <div className="absolute bg-neutral-950 left-0 right-0 top-0 min-h-screen">
-        <div className="h-screen relative w-full">
-          {/* Header */}
-          <Header onTabChange={handleTabChange} />
+    <div className="bg-neutral-950 h-screen flex flex-col overflow-hidden">
+      {/* Header - Fixed at top */}
+      <Header onTabChange={handleTabChange} />
 
-          {/* Main Content Container */}
-          <div className="flex flex-row items-start left-0 right-0 top-[95.5px] absolute">
-            {/* Sidebar */}
-            <Sidebar activeTab={activeTab} onMenuChange={handleMenuChange} />
+      {/* Main Content Container - Takes remaining height */}
+      <div className="flex flex-1 min-h-0">
+        {/* Sidebar - Fixed width, full height */}
+        <div className="flex-shrink-0">
+          <Sidebar activeTab={activeTab} onMenuChange={handleMenuChange} />
+        </div>
 
-            {/* Main Content */}
-            <MainContent selectedMenu={selectedMenu} />
-          </div>
+        {/* Main Content - Takes remaining space */}
+        <div className="flex-1 min-w-0">
+          <MainContent selectedMenu={selectedMenu} />
         </div>
       </div>
     </div>

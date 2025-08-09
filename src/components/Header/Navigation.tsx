@@ -150,7 +150,6 @@ export default function Navigation({ onTabChange }: { onTabChange?: (tabId: TabT
 
   return (
     <div className="flex flex-row h-[38.5px] items-center px-7 relative w-full">
-      <div className="absolute border-b border-neutral-800/30 inset-0 pointer-events-none" />
       <div className="flex flex-row items-start w-full">
         {tabs.map((tab, index) => (
           <NavigationTab
