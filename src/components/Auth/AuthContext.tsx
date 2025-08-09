@@ -16,8 +16,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Valid credentials
-const VALID_EMAIL = 'designer@callourstudio.com';
-const VALID_PASSWORD = 'testing1234';
+const VALID_EMAIL = 'designer@gmail.com';
+const VALID_PASSWORD = 'test1234';
 const STORAGE_KEY = 'intro_auth_user';
 
 interface AuthProviderProps {

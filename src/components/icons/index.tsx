@@ -266,4 +266,77 @@ export const DragHandleIcon = () => (
     <circle cx="3" cy="9.5" r="1" />
     <circle cx="9" cy="9.5" r="1" />
   </svg>
+);
+
+// New extended icon set for categories
+export const BuildingIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M3 21V7l9-4 9 4v14h-6v-6H9v6H3zm8-8h2V9h-2v4z"/>
+  </svg>
+);
+
+export const BriefcaseIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M10 4h4a2 2 0 012 2v2h3a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V10a2 2 0 012-2h3V6a2 2 0 012-2zm0 4V6h4v2h-4z"/>
+  </svg>
+);
+
+export const LinkIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M10.59 13.41a1.998 1.998 0 010-2.82l2-2a2 2 0 112.82 2.82l-1 1 1.41 1.41 1-1a4 4 0 10-5.66-5.66l-2 2a4 4 0 005.66 5.66l.59-.59-1.41-1.41-.59.59a2 2 0 11-2.82-2.82l1-1-1.41-1.41-1 1a4 4 0 000 5.66 4 4 0 005.66 0l2-2-1.41-1.41-2 2a2 2 0 01-2.82 0z"/>
+  </svg>
+);
+
+export const UploadIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5 20h14v-2H5v2zm7-16l5 5h-3v4h-4V9H7l5-5z"/>
+  </svg>
+);
+
+export const DownloadIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M5 20h14v-2H5v2zm7-16v8l3-3 1.41 1.41L12 16.83 8.59 13.41 10 12l3 3V4h-1z"/>
+  </svg>
+);
+
+export const GridIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
+  </svg>
+);
+
+export const TableIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M3 3h18v18H3V3zm2 2v4h14V5H5zm0 6v8h4v-8H5zm6 0v8h8v-8h-8z"/>
+  </svg>
+);
+
+export const TagIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M20.59 13.41L11 3H3v8l9.59 9.59a2 2 0 002.82 0l5.18-5.18a2 2 0 000-2.82zM7 8a2 2 0 114 0 2 2 0 01-4 0z"/>
+  </svg>
+);
+
+export const LockIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 17a2 2 0 002-2v-2a2 2 0 10-4 0v2a2 2 0 002 2zm6-6h-1V9a5 5 0 10-10 0v2H6a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2v-7a2 2 0 00-2-2zm-3 0H9V9a3 3 0 016 0v2z"/>
+  </svg>
+);
+
+export const ShieldIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 2l8 4v6c0 5-3.5 9.74-8 10-4.5-.26-8-5-8-10V6l8-4z"/>
+  </svg>
+);
+
+export const TrophyIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M17 3h3v2a5 5 0 01-5 5h-1v2h3v2H7v-2h3V10H9A5 5 0 014 5V3h3V2h10v1z"/>
+  </svg>
+);
+
+export const BagIcon = () => (
+  <svg className="w-full h-full" fill="currentColor" viewBox="0 0 24 24">
+    <path d="M6 7h12l-1 13H7L6 7zm3-3h6l1 3H8l1-3z"/>
+  </svg>
 ); 

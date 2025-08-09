@@ -83,11 +83,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       icon: <FlowIcon />,
       description: 'Our comprehensive design process from ideation to implementation',
       content: [
-        {
-          id: 'empty-content',
-          type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
     'style-guide': {
@@ -95,47 +91,31 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       icon: <DesignIcon />,
       description: 'Visual design standards and guidelines for consistent branding',
       content: [
-        {
-          id: 'empty-content',
-          type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
     'folder-name': {
       title: 'Folder Name',
-  icon: <FolderIcon />,
+      icon: <FolderIcon />,
       description: 'Naming conventions for project folders and organization',
       content: [
-        {
-          id: 'empty-content',
-        type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
-    'file-name-structure': {
+    'file-structure': {
       title: 'File Name & Structure',
       icon: <FileIcon />,
       description: 'File naming standards and organizational structure',
       content: [
-        {
-          id: 'empty-content',
-          type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
-    'page-name-structure': {
+    'page-structure': {
       title: 'Page Name & Structure',
       icon: <PageIcon />,
       description: 'Page naming conventions and hierarchical structure',
       content: [
-        {
-          id: 'empty-content',
-          type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
     'cover-thumbnail': {
@@ -143,23 +123,15 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       icon: <ImageIcon />,
       description: 'Guidelines for creating covers and thumbnails',
       content: [
-        {
-          id: 'empty-content',
-          type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
-    'layer-name-convention': {
+    'layer-convention': {
       title: 'Layer Name Convention',
       icon: <LayersIcon />,
       description: 'Standardized naming for design layers and components',
       content: [
-        {
-          id: 'empty-content',
-          type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
     'design-bank': {
@@ -167,11 +139,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       icon: <DesignIcon />,
       description: 'Repository of design assets and resources',
       content: [
-        {
-          id: 'empty-content',
-        type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
     'design-system': {
@@ -179,11 +147,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       icon: <SystemIcon />,
       description: 'Comprehensive design system and component library',
       content: [
-        {
-          id: 'empty-content',
-        type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
     'flow': {
@@ -191,11 +155,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       icon: <FlowIcon />,
       description: 'User flow diagrams and interaction patterns',
       content: [
-        {
-          id: 'empty-content',
-        type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
     'ai': {
@@ -203,51 +163,159 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
       icon: <AIIcon />,
       description: 'AI-powered design tools and automation',
       content: [
-        {
-          id: 'empty-content',
-        type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
 
-    // Company Tab Content
-    'company-overview': {
-      title: 'Company Overview',
-      icon: <HomeIcon />,
-      description: 'Introduction to our company values and mission',
+    // Company Tab Content (match Sidebar IDs)
+    'mission-vision': {
+      title: 'Mission & Vision',
+      icon: <DesignIcon />,
+      description: 'Our mission and vision statements',
       content: [
-        {
-          id: 'empty-content',
-        type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
-    'team': {
-      title: 'Team',
-      icon: <PersonIcon />,
-      description: 'Meet our talented team members',
+    'company-values': {
+      title: 'Company Values',
+      icon: <FlowIcon />,
+      description: 'Core values that guide our behavior',
       content: [
-        {
-          id: 'empty-content',
-        type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
     },
-    'culture': {
-      title: 'Culture',
-      icon: <HeartIcon />,
-      description: 'Our workplace culture and values',
+    'organization-chart': {
+      title: 'Organization Chart',
+      icon: <SystemIcon />,
+      description: 'Company organizational structure',
       content: [
-        {
-          id: 'empty-content',
-        type: 'paragraph',
-          content: '',
-        }
+        { id: 'empty-content', type: 'paragraph', content: '' }
       ]
-    }
+    },
+    'hr-policies': {
+      title: 'HR Policies',
+      icon: <FileIcon />,
+      description: 'Human Resources policies and procedures',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'code-of-conduct': {
+      title: 'Code of Conduct',
+      icon: <PageIcon />,
+      description: 'Standards for ethical and professional conduct',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'security-policies': {
+      title: 'Security Policies',
+      icon: <LayersIcon />,
+      description: 'Security rules and best practices',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+
+    // Developer Tab Content
+    'coding-standards': {
+      title: 'Coding Standards',
+      icon: <FileIcon />,
+      description: 'Standards for writing clean, consistent code',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'git-workflow': {
+      title: 'Git Workflow',
+      icon: <FlowIcon />,
+      description: 'Branching strategy and PR process',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'code-review': {
+      title: 'Code Review',
+      icon: <PageIcon />,
+      description: 'Guidelines for reviewing code effectively',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'api-docs': {
+      title: 'API Documentation',
+      icon: <SystemIcon />,
+      description: 'APIs and integration references',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'architecture': {
+      title: 'Architecture',
+      icon: <DesignIcon />,
+      description: 'System architecture and diagrams',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'deployment': {
+      title: 'Deployment Guide',
+      icon: <LayersIcon />,
+      description: 'How to deploy the application',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+
+    // Content Tab Content
+    'brand-voice': {
+      title: 'Brand Voice',
+      icon: <DesignIcon />,
+      description: 'Tone and voice guidelines',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'content-guidelines': {
+      title: 'Content Guidelines',
+      icon: <FileIcon />,
+      description: 'Editorial standards for content',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'editorial-calendar': {
+      title: 'Editorial Calendar',
+      icon: <PageIcon />,
+      description: 'Planning and scheduling content',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'blog-posts': {
+      title: 'Blog Posts',
+      icon: <FlowIcon />,
+      description: 'Guidelines and ideas for blog posts',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'social-media': {
+      title: 'Social Media',
+      icon: <ImageIcon />,
+      description: 'Social media strategy and assets',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
+    'marketing-copy': {
+      title: 'Marketing Copy',
+      icon: <SystemIcon />,
+      description: 'Copywriting for marketing materials',
+      content: [
+        { id: 'empty-content', type: 'paragraph', content: '' }
+      ]
+    },
   };
 
   return contentMap[menuId] || {
@@ -255,11 +323,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
     icon: <FileIcon />,
     description: 'Default content',
     content: [
-      {
-        id: 'empty-content',
-        type: 'paragraph',
-        content: '',
-      }
+      { id: 'empty-content', type: 'paragraph', content: '' }
     ]
   };
 };

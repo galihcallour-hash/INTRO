@@ -1,4 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, arrayMove, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import Block, { BlockData, BlockType } from './Block';
 
 interface EditorProps {
@@ -18,9 +21,13 @@ const SLASH_MENU_OPTIONS = [
   { type: 'bulletList' as BlockType, label: 'Bulleted list', description: 'Create a simple bulleted list.' },
   { type: 'numberedList' as BlockType, label: 'Numbered list', description: 'Create a list with numbering.' },
   { type: 'todoList' as BlockType, label: 'To-do list', description: 'Track tasks with a to-do list.' },
+  { type: 'toggleList' as BlockType, label: 'Toggle list', description: 'Togglable list of items.' },
+  { type: 'page' as BlockType, label: 'Page', description: 'Create a sub-page.' },
+  { type: 'callout' as BlockType, label: 'Callout', description: 'Make writing stand out.' },
   { type: 'quote' as BlockType, label: 'Quote', description: 'Capture a quote.' },
+  { type: 'table' as BlockType, label: 'Table', description: 'Add a simple table.' },
   { type: 'divider' as BlockType, label: 'Divider', description: 'Visually divide blocks.' },
-  { type: 'image' as BlockType, label: 'Image', description: 'Upload or embed with a link.' },
+  { type: 'linkToPage' as BlockType, label: 'Link to page', description: 'Link to an existing page.' },
 ];
 
 export default function Editor({ initialContent, onContentChange }: EditorProps) {
@@ -35,15 +42,17 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
   );
   
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
-  const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
+  // dnd-kit handles drag state internally; no local dragged id needed
   const [slashMenuState, setSlashMenuState] = useState<{
     blockId: string | null;
     query: string;
     isVisible: boolean;
+    fromPlus?: boolean;
   }>({
     blockId: null,
     query: '',
     isVisible: false,
+    fromPlus: false,
   });
 
   const editorRef = useRef<HTMLDivElement>(null);
@@ -58,26 +67,15 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
       block.id === blockId ? { ...block, content } : block
     );
     
-    // Handle slash command detection
+    // Handle slash command detection (from typing)
     if (content.endsWith('/')) {
-      setSlashMenuState({
-        blockId,
-        query: '',
-        isVisible: true,
-      });
+      setSlashMenuState({ blockId, query: '', isVisible: true, fromPlus: false });
     } else if (content.includes('/') && slashMenuState.isVisible && slashMenuState.blockId === blockId) {
       const slashIndex = content.lastIndexOf('/');
       const query = content.substring(slashIndex + 1);
-      setSlashMenuState(prev => ({
-        ...prev,
-        query,
-      }));
+      setSlashMenuState(prev => ({ ...prev, query }));
     } else if (slashMenuState.isVisible && slashMenuState.blockId === blockId && !content.includes('/')) {
-      setSlashMenuState({
-        blockId: null,
-        query: '',
-        isVisible: false,
-      });
+      setSlashMenuState({ blockId: null, query: '', isVisible: false, fromPlus: false });
     }
     
     updateBlocks(newBlocks);
@@ -89,43 +87,26 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
     );
     updateBlocks(newBlocks);
     
-    // Close slash menu when type changes
-    setSlashMenuState({
-      blockId: null,
-      query: '',
-      isVisible: false,
-    });
+    setSlashMenuState({ blockId: null, query: '', isVisible: false, fromPlus: false });
   }, [blocks, updateBlocks]);
 
   const handleAddBlock = useCallback((afterId: string, type: BlockType = 'paragraph') => {
     const afterIndex = blocks.findIndex(block => block.id === afterId);
-    const newBlock: BlockData = {
-      id: generateId(),
-      type,
-      content: '',
-    };
-    
+    const newBlock: BlockData = { id: generateId(), type, content: '' };
     const newBlocks = [
       ...blocks.slice(0, afterIndex + 1),
       newBlock,
       ...blocks.slice(afterIndex + 1),
     ];
-    
     updateBlocks(newBlocks);
-    
-    // Focus the new block
-    setTimeout(() => {
-      setSelectedBlockId(newBlock.id);
-    }, 0);
+    setTimeout(() => setSelectedBlockId(newBlock.id), 0);
+    return newBlock.id;
   }, [blocks, updateBlocks]);
 
   const handleDeleteBlock = useCallback((blockId: string) => {
     if (blocks.length <= 1) return; // Don't delete the last block
-    
     const newBlocks = blocks.filter(block => block.id !== blockId);
     updateBlocks(newBlocks);
-    
-    // Focus previous block if available
     const deletedIndex = blocks.findIndex(block => block.id === blockId);
     if (deletedIndex > 0) {
       setSelectedBlockId(blocks[deletedIndex - 1].id);
@@ -142,34 +123,25 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
     const block = blocks.find(b => b.id === blockId);
     if (!block) return;
 
-    // Handle Enter key
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      
-      // If current block is empty and not a paragraph, convert to paragraph
       if (block.content === '' && block.type !== 'paragraph') {
         handleTypeChange(blockId, 'paragraph');
         return;
       }
-      
-      // Add new block
       handleAddBlock(blockId);
       return;
     }
 
-    // Handle Backspace at the beginning of a block
     if (e.key === 'Backspace') {
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         if (range.startOffset === 0 && range.endOffset === 0) {
           e.preventDefault();
-          
           if (block.content === '' && index > 0) {
-            // Delete empty block
             handleDeleteBlock(blockId);
           } else if (index > 0 && block.content === '') {
-            // Convert block type to paragraph if it's empty
             if (block.type !== 'paragraph') {
               handleTypeChange(blockId, 'paragraph');
             } else {
@@ -181,101 +153,76 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
       }
     }
 
-    // Handle Arrow Up/Down navigation
     if (e.key === 'ArrowUp' && index > 0) {
       e.preventDefault();
       setSelectedBlockId(blocks[index - 1].id);
       return;
     }
-    
     if (e.key === 'ArrowDown' && index < blocks.length - 1) {
       e.preventDefault();
       setSelectedBlockId(blocks[index + 1].id);
       return;
     }
 
-    // Handle Escape to close slash menu
     if (e.key === 'Escape' && slashMenuState.isVisible) {
-      setSlashMenuState({
-        blockId: null,
-        query: '',
-        isVisible: false,
-      });
+      setSlashMenuState({ blockId: null, query: '', isVisible: false, fromPlus: false });
       return;
     }
   }, [blocks, slashMenuState, handleTypeChange, handleAddBlock, handleDeleteBlock]);
 
-  const handleDragStart = useCallback((e: React.DragEvent, blockId: string) => {
-    setDraggedBlockId(blockId);
-    e.dataTransfer.effectAllowed = 'move';
-  }, []);
+  // dnd-kit sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
+  );
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    
-    if (!draggedBlockId || draggedBlockId === targetId) {
-      setDraggedBlockId(null);
-      return;
-    }
-
-    const draggedIndex = blocks.findIndex(block => block.id === draggedBlockId);
-    const targetIndex = blocks.findIndex(block => block.id === targetId);
-    
-    if (draggedIndex === -1 || targetIndex === -1) {
-      setDraggedBlockId(null);
-      return;
-    }
-
-    const newBlocks = [...blocks];
-    const [draggedBlock] = newBlocks.splice(draggedIndex, 1);
-    newBlocks.splice(targetIndex, 0, draggedBlock);
-    
+  const handleDragEndDnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = blocks.findIndex(b => b.id === String(active.id));
+    const newIndex = blocks.findIndex(b => b.id === String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    const newBlocks = arrayMove(blocks, oldIndex, newIndex);
     updateBlocks(newBlocks);
-    setDraggedBlockId(null);
-  }, [blocks, draggedBlockId, updateBlocks]);
-
-  const handleSlashMenuSelect = useCallback((type: BlockType) => {
-    if (!slashMenuState.blockId) return;
-    
-    const block = blocks.find(b => b.id === slashMenuState.blockId);
-    if (!block) return;
-    
-    // Remove the slash command from content
-    const content = block.content;
-    const slashIndex = content.lastIndexOf('/');
-    const newContent = content.substring(0, slashIndex);
-    
-    // Update block type and content
-    const newBlocks = blocks.map(b =>
-      b.id === slashMenuState.blockId
-        ? { ...b, type, content: newContent }
-        : b
-    );
-    
-    updateBlocks(newBlocks);
-    
-    // Close slash menu
-    setSlashMenuState({
-      blockId: null,
-      query: '',
-      isVisible: false,
-    });
-  }, [blocks, slashMenuState, updateBlocks]);
+    setSelectedBlockId(String(active.id));
+  }, [blocks, updateBlocks]);
 
   const getFilteredSlashOptions = () => {
     if (!slashMenuState.query) return SLASH_MENU_OPTIONS;
-    
     const query = slashMenuState.query.toLowerCase();
     return SLASH_MENU_OPTIONS.filter(option =>
-      option.label.toLowerCase().includes(query) ||
-      option.description.toLowerCase().includes(query)
+      option.label.toLowerCase().includes(query) || option.description.toLowerCase().includes(query)
     );
   };
+
+  // Open slash menu from + action
+  const openSlashMenuFromPlus = useCallback((blockId: string) => {
+    setSlashMenuState({ blockId, query: '', isVisible: true, fromPlus: true });
+  }, []);
+
+  // Handle selecting from slash menu
+  const handleSlashMenuSelect = useCallback((type: BlockType) => {
+    if (!slashMenuState.blockId) return;
+    const block = blocks.find(b => b.id === slashMenuState.blockId);
+    if (!block) return;
+
+    if (slashMenuState.fromPlus) {
+      // Insert new block of selected type below current
+      const newId = handleAddBlock(block.id, type);
+      setSlashMenuState({ blockId: null, query: '', isVisible: false, fromPlus: false });
+      setSelectedBlockId(newId);
+      return;
+    }
+
+    // From typing '/': convert current block type and remove the slash query, if any
+    const content = block.content;
+    const slashIndex = content.lastIndexOf('/');
+    const newContent = slashIndex >= 0 ? content.substring(0, slashIndex) : content;
+    const newBlocks = blocks.map(b =>
+      b.id === slashMenuState.blockId ? { ...b, type, content: newContent } : b
+    );
+    updateBlocks(newBlocks);
+    setSlashMenuState({ blockId: null, query: '', isVisible: false, fromPlus: false });
+  }, [blocks, slashMenuState, handleAddBlock, updateBlocks]);
 
   // Focus management
   useEffect(() => {
@@ -285,25 +232,17 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
         const editableElement = blockElement.querySelector('[contenteditable="true"]') as HTMLElement;
         if (editableElement) {
           editableElement.focus();
-          
-          // Simple approach: move cursor to end
+
+          // Move caret to the end using Range/Selection API (more reliable across browsers)
           setTimeout(() => {
-            if (document.execCommand) {
-              // Use execCommand to move cursor to end
-              document.execCommand('selectAll', false, undefined);
-              document.execCommand('collapseToEnd', false, undefined);
-            } else {
-              // Fallback: manual range setting
-              const range = document.createRange();
-              const selection = window.getSelection();
-              if (selection) {
-                range.selectNodeContents(editableElement);
-                range.collapse(false); // false = end
-                selection.removeAllRanges();
-                selection.addRange(range);
-              }
-            }
-          }, 10);
+            const selection = window.getSelection();
+            if (!selection) return;
+            const range = document.createRange();
+            range.selectNodeContents(editableElement);
+            range.collapse(false); // place caret at end
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }, 0);
         }
       }
     }
@@ -318,37 +257,51 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
         if (slashMenuState.isVisible) {
           const target = e.target as HTMLElement;
           if (!target.closest('[data-slash-menu]')) {
-            setSlashMenuState({
-              blockId: null,
-              query: '',
-              isVisible: false,
-            });
+            setSlashMenuState({ blockId: null, query: '', isVisible: false, fromPlus: false });
           }
         }
       }}
     >
-      {blocks.map((block, index) => (
-        <div key={block.id} data-block-id={block.id}>
-          <Block
-            block={block}
-            index={index}
-            isSelected={selectedBlockId === block.id}
-            onContentChange={handleContentChange}
-            onTypeChange={handleTypeChange}
-            onAddBlock={handleAddBlock}
-            onDeleteBlock={handleDeleteBlock}
-            onFocus={handleBlockFocus}
-            onKeyDown={handleKeyDown}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            isDragging={draggedBlockId === block.id}
-            showSlashMenu={slashMenuState.isVisible && slashMenuState.blockId === block.id}
-            slashMenuOptions={getFilteredSlashOptions()}
-            onSlashMenuSelect={handleSlashMenuSelect}
-          />
-        </div>
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndDnd}>
+        <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+          {blocks.map((block, index) => (
+            <SortableItem key={block.id} id={block.id}>
+              {(dragHandleProps) => (
+                <div data-block-id={block.id}>
+                  <Block
+                    block={block}
+                    index={index}
+                    isSelected={selectedBlockId === block.id}
+                    onContentChange={handleContentChange}
+                    onTypeChange={handleTypeChange}
+                    onAddBlock={handleAddBlock}
+                    onDeleteBlock={handleDeleteBlock}
+                    onFocus={handleBlockFocus}
+                    onKeyDown={handleKeyDown}
+                    dragHandleListeners={dragHandleProps.listeners}
+                    dragHandleAttributes={dragHandleProps.attributes}
+                    onOpenSlashMenu={openSlashMenuFromPlus}
+                    showSlashMenu={slashMenuState.isVisible && slashMenuState.blockId === block.id}
+                    slashMenuOptions={getFilteredSlashOptions()}
+                    onSlashMenuSelect={handleSlashMenuSelect}
+                  />
+                </div>
+              )}
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+}
+
+// Sortable wrapper to provide drag handle props and item transform
+function SortableItem({ id, children }: { id: string; children: (props: { listeners?: React.HTMLAttributes<HTMLElement>; attributes?: React.AriaAttributes & React.HTMLAttributes<HTMLElement> }) => React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  const style = { transform: CSS.Transform.toString(transform), transition } as React.CSSProperties;
+  return (
+    <div ref={setNodeRef} style={style}>
+      {children({ listeners, attributes })}
     </div>
   );
 } 

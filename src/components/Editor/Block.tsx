@@ -1,9 +1,24 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { PlusIcon, DragHandleIcon } from '../icons';
 import TextFormatter from './TextFormatter';
 
-export type BlockType = 'paragraph' | 'heading1' | 'heading2' | 'heading3' | 'bulletList' | 'numberedList' | 'todoList' | 'quote' | 'image' | 'divider';
+export type BlockType =
+  | 'paragraph'
+  | 'heading1'
+  | 'heading2'
+  | 'heading3'
+  | 'bulletList'
+  | 'numberedList'
+  | 'todoList'
+  | 'toggleList'
+  | 'page'
+  | 'linkToPage'
+  | 'callout'
+  | 'quote'
+  | 'table'
+  | 'image'
+  | 'divider';
 
 export interface BlockData {
   id: string;
@@ -24,9 +39,9 @@ interface BlockProps {
   onDeleteBlock: (id: string) => void;
   onFocus: (id: string) => void;
   onKeyDown: (e: React.KeyboardEvent, id: string, index: number) => void;
-  onDragStart: (e: React.DragEvent, id: string) => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent, targetId: string) => void;
+  dragHandleListeners?: React.HTMLAttributes<HTMLElement>;
+  dragHandleAttributes?: React.AriaAttributes & React.HTMLAttributes<HTMLElement>;
+  onOpenSlashMenu?: (blockId: string) => void;
   isDragging?: boolean;
   showSlashMenu?: boolean;
   slashMenuOptions?: Array<{type: BlockType, label: string, description: string}>;
@@ -42,9 +57,9 @@ export default function Block({
   onAddBlock,
   onFocus,
   onKeyDown,
-  onDragStart,
-  onDragOver,
-  onDrop,
+  dragHandleListeners,
+  dragHandleAttributes,
+  onOpenSlashMenu,
   isDragging = false,
   showSlashMenu = false,
   slashMenuOptions = [],
@@ -53,8 +68,19 @@ export default function Block({
   const [isHovered, setIsHovered] = useState(false);
   const [showFormatToolbar, setShowFormatToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
+  const [dropPosition, setDropPosition] = useState<null | 'before' | 'after'>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const slashMenuRef = useRef<HTMLDivElement>(null);
+
+  // Keep DOM text in sync without letting React control text nodes
+  useEffect(() => {
+    if (!contentRef.current) return;
+    const el = contentRef.current;
+    // Only update when different to avoid resetting caret
+    if ((el.textContent || '') !== (block.content || '')) {
+      el.textContent = block.content || '';
+    }
+  }, [block.content, block.id]);
 
   const handleContentChange = (e: React.FormEvent<HTMLDivElement>) => {
     const content = e.currentTarget.textContent || '';
@@ -150,12 +176,28 @@ export default function Block({
   };
 
   const renderContent = () => {
+    const PLACEHOLDER_BY_TYPE: Record<BlockType, string | null> = {
+      paragraph: 'Write what you want to write today...',
+      heading1: 'Heading 1',
+      heading2: 'Heading 2',
+      heading3: 'Heading 3',
+      bulletList: 'Bulleted list',
+      numberedList: 'Numbered list',
+      todoList: 'To-do list',
+      toggleList: 'Toggle list',
+      page: 'Page',
+      linkToPage: 'Link to page',
+      callout: 'Callout',
+      quote: 'Quote',
+      table: 'Table',
+      image: null,
+      divider: null,
+    };
+
     const getPlaceholder = () => {
-      // Only show placeholder on empty blocks that are currently selected/focused
-      if (block.content === '' && isSelected) {
-        return "Write what you want to write today...";
-      }
-      return undefined;
+      if (block.content !== '') return undefined;
+      const ph = PLACEHOLDER_BY_TYPE[block.type];
+      return ph ?? undefined;
     };
 
     const commonProps = {
@@ -167,44 +209,35 @@ export default function Block({
       onFocus: handleFocus,
       onMouseUp: handleMouseUp,
       className: `outline-none min-h-[1.5rem] focus:outline-none`,
-      'data-placeholder': getPlaceholder()
-    };
+      'data-placeholder': getPlaceholder(),
+      'data-empty': block.content === '' ? 'true' : 'false'
+    } as const;
 
     switch (block.type) {
       case 'heading1':
         return (
-          <h1 {...commonProps} className={`${commonProps.className} text-2xl font-bold text-neutral-50 text-left`}>
-            {block.content}
-          </h1>
+          <h1 {...commonProps} className={`${commonProps.className} text-2xl font-bold text-neutral-50 text-left`} />
         );
       case 'heading2':
         return (
-          <h2 {...commonProps} className={`${commonProps.className} text-xl font-semibold text-neutral-50 text-left`}>
-            {block.content}
-          </h2>
+          <h2 {...commonProps} className={`${commonProps.className} text-xl font-semibold text-neutral-50 text-left`} />
         );
       case 'heading3':
         return (
-          <h3 {...commonProps} className={`${commonProps.className} text-lg font-medium text-neutral-50 text-left`}>
-            {block.content}
-          </h3>
+          <h3 {...commonProps} className={`${commonProps.className} text-lg font-medium text-neutral-50 text-left`} />
         );
       case 'bulletList':
         return (
           <div className="flex items-start text-left">
             <span className="text-neutral-400 mr-1 mt-0.5 text-base leading-6 flex-shrink-0">•</span>
-            <div {...commonProps} className={`${commonProps.className} flex-1 text-neutral-200 text-left`}>
-              {block.content}
-            </div>
+            <div {...commonProps} className={`${commonProps.className} flex-1 text-neutral-200 text-left`} />
           </div>
         );
       case 'numberedList':
         return (
           <div className="flex items-start text-left">
             <span className="text-neutral-400 mr-1 mt-0.5 text-base leading-6 flex-shrink-0">1.</span>
-            <div {...commonProps} className={`${commonProps.className} flex-1 text-neutral-200 text-left`}>
-              {block.content}
-            </div>
+            <div {...commonProps} className={`${commonProps.className} flex-1 text-neutral-200 text-left`} />
           </div>
         );
       case 'todoList':
@@ -216,26 +249,44 @@ export default function Block({
               onChange={handleCheckboxChange}
               className="mt-1.5 mr-1 rounded flex-shrink-0"
             />
-            <div {...commonProps} className={`${commonProps.className} flex-1 text-neutral-200 text-left ${block.checked ? 'line-through text-neutral-500' : ''}`}>
-              {block.content}
-            </div>
+            <div {...commonProps} className={`${commonProps.className} flex-1 text-neutral-200 text-left ${block.checked ? 'line-through text-neutral-500' : ''}`} />
           </div>
         );
       case 'quote':
         return (
           <blockquote className="border-l-4 border-neutral-600 pl-4 text-left">
-            <div {...commonProps} className={`${commonProps.className} text-neutral-300 italic text-left`}>
-              {block.content}
-            </div>
+            <div {...commonProps} className={`${commonProps.className} text-neutral-300 italic text-left`} />
           </blockquote>
+        );
+      case 'callout':
+        return (
+          <div className="rounded-md bg-neutral-800/60 border border-neutral-700 p-3 text-left">
+            <div {...commonProps} className={`${commonProps.className} text-neutral-200 text-left`} />
+          </div>
+        );
+      case 'toggleList':
+        return (
+          <div className="flex items-start text-left">
+            <span className="text-neutral-400 mr-1 mt-0.5 text-base leading-6 flex-shrink-0">▸</span>
+            <div {...commonProps} className={`${commonProps.className} flex-1 text-neutral-200 text-left`} />
+          </div>
+        );
+      case 'page':
+      case 'linkToPage':
+        return (
+          <div {...commonProps} className={`${commonProps.className} text-neutral-200 text-left`} />
+        );
+      case 'table':
+        return (
+          <div className="rounded-md border border-neutral-700 p-2 text-left">
+            <div {...commonProps} className={`${commonProps.className} text-neutral-200 text-left`} />
+          </div>
         );
       case 'divider':
         return <hr className="border-neutral-700 my-4" />;
       default:
         return (
-          <div {...commonProps} className={`${commonProps.className} text-neutral-200 text-left`}>
-            {block.content}
-          </div>
+          <div {...commonProps} className={`${commonProps.className} text-neutral-200 text-left`} />
         );
     }
   };
@@ -250,16 +301,24 @@ export default function Block({
 
   return (
     <div
-      className={`group relative py-1 transition-opacity duration-200 ${
-        isDragging ? 'opacity-50' : 'opacity-100'
-      }`}
+      className={`group relative py-1 transition-opacity duration-200 opacity-100`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onDragOver={onDragOver}
-      onDrop={(e) => onDrop(e, block.id)}
+      onDragOver={(e) => {
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+        const isAfter = e.clientY > rect.top + rect.height / 2;
+        setDropPosition(isAfter ? 'after' : 'before');
+      }}
+      onDragEnter={(e) => e.preventDefault()}
+      onDragLeave={() => setDropPosition(null)}
     >
       {/* Extended Hover Area - Invisible extension to the left */}
-      <div className="absolute left-[-80px] top-0 bottom-0 w-[80px] pointer-events-auto"></div>
+      <div
+        className="absolute left-[-80px] top-0 bottom-0 w-[80px] pointer-events-auto cursor-grab active:cursor-grabbing"
+        {...dragHandleAttributes}
+        {...dragHandleListeners}
+        title="Drag to move"
+      />
       
       {/* Action Controls - Show when block is selected or hovered */}
       {(isSelected || isHovered) && !isDragging && (
@@ -268,7 +327,7 @@ export default function Block({
         }`}>
           {/* Add Block Button */}
           <button
-            onClick={handleAddBlock}
+            onClick={() => onOpenSlashMenu ? onOpenSlashMenu(block.id) : handleAddBlock()}
             className="p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors duration-200"
             title="Add block"
           >
@@ -278,8 +337,8 @@ export default function Block({
           {/* Drag Handle */}
           <div
             className="p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors duration-200 cursor-grab active:cursor-grabbing"
-            draggable
-            onDragStart={(e) => onDragStart(e, block.id)}
+            {...dragHandleAttributes}
+            {...dragHandleListeners}
             title="Drag to move"
           >
             <DragHandleIcon />
@@ -288,15 +347,39 @@ export default function Block({
       )}
 
       {/* Block Content */}
-      <div className="min-h-[1.5rem] relative">
+      <div className="min-h-[1.5rem] relative" draggable={false}>
         {renderContent()}
+        {/* Drop indicator line (before/after) */}
+        {dropPosition && (
+          <div
+            className={`absolute left-0 right-0 h-[2px] bg-[#359aba] rounded ${
+              dropPosition === 'before' ? 'top-0' : 'bottom-0'
+            }`}
+          />
+        )}
         
         {/* Placeholder styling */}
         <style jsx>{`
+          /* Fallback: when DOM truly empty */
+          [contenteditable][data-placeholder] { position: relative; }
           [data-placeholder]:empty::before {
             content: attr(data-placeholder);
             color: #6b7280;
             pointer-events: none;
+            position: absolute;
+            left: 0;
+            top: 0;
+            white-space: pre-wrap;
+          }
+          /* Robust: when browser inserts <br/> in contenteditable (not empty) */
+          [data-placeholder][data-empty="true"]::before {
+            content: attr(data-placeholder);
+            color: #6b7280;
+            pointer-events: none;
+            position: absolute;
+            left: 0;
+            top: 0;
+            white-space: pre-wrap;
           }
         `}</style>
       </div>

@@ -34,40 +34,85 @@ import {
   ShoppingIcon,
   FavoriteIcon,
   MenuIcon,
-  MoreIcon
+  MoreIcon,
+  ChevronIcon,
+  BuildingIcon,
+  BriefcaseIcon,
+  LinkIcon,
+  UploadIcon,
+  DownloadIcon,
+  GridIcon,
+  TableIcon,
+  TagIcon,
+  LockIcon,
+  ShieldIcon,
+  TrophyIcon,
+  BagIcon
 } from '../icons';
 
-// Available icons for the icon picker
-const availableIcons = [
-  { name: 'Home', icon: <HomeIcon /> },
-  { name: 'Folder', icon: <FolderIcon /> },
-  { name: 'File', icon: <FileIcon /> },
-  { name: 'Page', icon: <PageIcon /> },
-  { name: 'Image', icon: <ImageIcon /> },
-  { name: 'Camera', icon: <CameraIcon /> },
-  { name: 'Video', icon: <VideoIcon /> },
-  { name: 'Music', icon: <MusicIcon /> },
-  { name: 'Star', icon: <StarIcon /> },
-  { name: 'Heart', icon: <HeartIcon /> },
-  { name: 'Person', icon: <PersonIcon /> },
-  { name: 'Email', icon: <EmailIcon /> },
-  { name: 'Phone', icon: <PhoneIcon /> },
-  { name: 'Location', icon: <LocationIcon /> },
-  { name: 'Calendar', icon: <CalendarIcon /> },
-  { name: 'Clock', icon: <ClockIcon /> },
-  { name: 'Search', icon: <SearchIcon /> },
-  { name: 'Notification', icon: <NotificationIcon /> },
-  { name: 'Layers', icon: <LayersIcon /> },
-  { name: 'Design', icon: <DesignIcon /> },
-  { name: 'System', icon: <SystemIcon /> },
-  { name: 'Flow', icon: <FlowIcon /> },
-  { name: 'AI', icon: <AIIcon /> },
-  { name: 'Game', icon: <GameIcon /> },
-  { name: 'Book', icon: <BookIcon /> },
-  { name: 'Shopping', icon: <ShoppingIcon /> },
-  { name: 'Favorite', icon: <FavoriteIcon /> },
-  { name: 'Menu', icon: <MenuIcon /> },
-  { name: 'More', icon: <MoreIcon /> },
+// Categorized icons for the icon picker
+const iconCategories: { label: string; icons: { name: string; icon: React.ReactNode }[] }[] = [
+  {
+    label: 'General',
+    icons: [
+      { name: 'Home', icon: <HomeIcon /> },
+      { name: 'Folder', icon: <FolderIcon /> },
+      { name: 'File', icon: <FileIcon /> },
+      { name: 'Page', icon: <PageIcon /> },
+      { name: 'Image', icon: <ImageIcon /> },
+      { name: 'Grid', icon: <GridIcon /> },
+      { name: 'Table', icon: <TableIcon /> },
+      { name: 'Link', icon: <LinkIcon /> },
+      { name: 'Upload', icon: <UploadIcon /> },
+      { name: 'Download', icon: <DownloadIcon /> },
+      { name: 'Tag', icon: <TagIcon /> },
+      { name: 'Lock', icon: <LockIcon /> },
+      { name: 'Shield', icon: <ShieldIcon /> },
+      { name: 'Trophy', icon: <TrophyIcon /> },
+    ],
+  },
+  {
+    label: 'Media',
+    icons: [
+      { name: 'Camera', icon: <CameraIcon /> },
+      { name: 'Video', icon: <VideoIcon /> },
+      { name: 'Music', icon: <MusicIcon /> },
+      { name: 'Star', icon: <StarIcon /> },
+      { name: 'Heart', icon: <HeartIcon /> },
+      { name: 'Favorite', icon: <FavoriteIcon /> },
+    ],
+  },
+  {
+    label: 'People & Company',
+    icons: [
+      { name: 'Person', icon: <PersonIcon /> },
+      { name: 'Email', icon: <EmailIcon /> },
+      { name: 'Phone', icon: <PhoneIcon /> },
+      { name: 'Location', icon: <LocationIcon /> },
+      { name: 'Building', icon: <BuildingIcon /> },
+      { name: 'Briefcase', icon: <BriefcaseIcon /> },
+      { name: 'Bag', icon: <BagIcon /> },
+    ],
+  },
+  {
+    label: 'System',
+    icons: [
+      { name: 'Calendar', icon: <CalendarIcon /> },
+      { name: 'Clock', icon: <ClockIcon /> },
+      { name: 'Search', icon: <SearchIcon /> },
+      { name: 'Notification', icon: <NotificationIcon /> },
+      { name: 'Layers', icon: <LayersIcon /> },
+      { name: 'Design', icon: <DesignIcon /> },
+      { name: 'System', icon: <SystemIcon /> },
+      { name: 'Flow', icon: <FlowIcon /> },
+      { name: 'AI', icon: <AIIcon /> },
+      { name: 'Game', icon: <GameIcon /> },
+      { name: 'Book', icon: <BookIcon /> },
+      { name: 'Shopping', icon: <ShoppingIcon /> },
+      { name: 'Menu', icon: <MenuIcon /> },
+      { name: 'More', icon: <MoreIcon /> },
+    ],
+  },
 ];
 
 interface MenuItemProps {
@@ -108,6 +153,7 @@ export default function MenuItem({
   const changeIconButtonRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const toggleDropdown = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -232,7 +278,7 @@ export default function MenuItem({
 
   return (
     <div 
-      className={`group relative w-full cursor-pointer transition-all duration-300 ease-in-out rounded-md ${
+      className={`group relative w-full cursor-pointer transition-colors duration-200 ease-in-out rounded-md ${
         isActive 
           ? 'bg-neutral-800/70' 
           : 'hover:bg-neutral-800/30'
@@ -241,7 +287,7 @@ export default function MenuItem({
       onMouseLeave={handleMouseLeave}
       onClick={handleMenuItemClick}
     >
-      <div className="flex items-center w-full px-3 py-2 sm:px-2 sm:py-1.5">
+      <div className="flex items-center w-full px-3 py-2 sm:px-2 sm:py-1.5 pr-3">
         {/* Drag Handle - appears on left when hovered */}
         <div
           className={`flex items-center justify-center w-3 h-3 cursor-grab active:cursor-grabbing text-neutral-500 hover:text-neutral-300 transition-opacity duration-300 ease-in-out mr-2 sm:mr-1.5 ${
@@ -262,15 +308,15 @@ export default function MenuItem({
         {/* Main Content Container - Icon and Text */}
         <div className="flex items-center grow">
           {/* Icon Container */}
-          <div className="flex items-center justify-center w-[14px] h-[14px] mr-2 sm:mr-1.5 sm:w-3 sm:h-3">
-            <div className="w-3.5 h-3.5 text-neutral-400 transition-colors duration-300 ease-in-out sm:w-3 sm:h-3 [&>svg]:w-full [&>svg]:h-full">
+          <div className="flex items-center justify-center w-[16px] h-[16px] mr-2 sm:mr-1.5 sm:w-4 sm:h-4">
+            <div className="w-4 h-4 text-neutral-400 transition-colors duration-300 ease-in-out sm:w-4 sm:h-4 [&>svg]:w-full [&>svg]:h-full">
               {icon}
             </div>
           </div>
           
           {/* Text */}
           <div className="flex flex-col grow items-start justify-start">
-            <div className={`font-normal text-[11.531px] leading-[17.5px] w-full text-left transition-colors duration-300 ease-in-out sm:text-[10px] sm:leading-[15px] ${
+            <div className={`font-normal text-[12px] leading-[18px] w-full text-left transition-colors duration-300 ease-in-out sm:text-[11.5px] sm:leading-[17px] ${
               isActive ? 'text-neutral-50' : 'text-[#a1a1a1] hover:text-neutral-300'
             }`}>
               {isEditing ? (
@@ -342,6 +388,10 @@ export default function MenuItem({
                   <ImageIcon />
                 </div>
                 <span className="ml-2 sm:ml-1.5">Change Icon</span>
+                {/* Right arrow indicator */}
+                <div className="ml-auto w-3 h-3 opacity-60 [&>svg]:w-3 [&>svg]:h-3 transform -rotate-90">
+                  <ChevronIcon />
+                </div>
               </button>
               <button
                 onClick={(e) => handleDropdownAction('duplicate', e)}
@@ -369,25 +419,55 @@ export default function MenuItem({
           {showIconPicker && typeof document !== 'undefined' && createPortal(
             <div 
               ref={iconPickerRef}
-              className="fixed bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg p-3 grid grid-cols-6 gap-2 min-w-[300px] max-h-[400px] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-200"
+              className="fixed bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg p-3 space-y-3 min-w-[360px] max-h-[420px] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-200"
               style={{
                 zIndex: 999999,
                 position: 'fixed',
-                left: changeIconButtonRef.current ? changeIconButtonRef.current.getBoundingClientRect().left : 0,
-                top: changeIconButtonRef.current ? changeIconButtonRef.current.getBoundingClientRect().bottom + 4 : 0,
+                left: dropdownRef.current
+                  ? dropdownRef.current.getBoundingClientRect().right + 8
+                  : (changeIconButtonRef.current ? changeIconButtonRef.current.getBoundingClientRect().right + 8 : 0),
+                top: changeIconButtonRef.current
+                  ? changeIconButtonRef.current.getBoundingClientRect().top
+                  : 0,
               }}
             >
-              {availableIcons.map((iconData, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleIconSelect(iconData)}
-                  className="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-[#359aba] hover:bg-neutral-700/50 rounded-md transition-colors duration-200 group"
-                  title={iconData.name}
-                >
-                  <div className="w-4 h-4 [&>svg]:w-4 [&>svg]:h-4 flex items-center justify-center">
-                    {iconData.icon}
+              {/* Search */}
+              <div className="px-2">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search icons..."
+                    className="w-full bg-neutral-900 text-neutral-200 placeholder-neutral-500 rounded-md pl-8 pr-3 py-2 text-xs border border-neutral-700 focus:outline-none focus:ring-0"
+                    aria-label="Search icons"
+                  />
+                  <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500">
+                    <SearchIcon />
                   </div>
-                </button>
+                </div>
+              </div>
+
+              {iconCategories.map((category, categoryIndex) => (
+                <div key={categoryIndex} className="flex flex-col">
+                  <div className="text-xs text-neutral-300 mb-1 px-2">{category.label}</div>
+                  <div className="grid grid-cols-6 gap-2">
+                    {category.icons
+                      .filter((i) => i.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((iconData, iconIndex) => (
+                      <button
+                        key={iconIndex}
+                        onClick={() => handleIconSelect(iconData)}
+                        className="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-[#359aba] hover:bg-neutral-700/50 rounded-md transition-colors duration-200 group"
+                        title={iconData.name}
+                      >
+                        <div className="w-4 h-4 [&>svg]:w-4 [&>svg]:h-4 flex items-center justify-center">
+                          {iconData.icon}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>,
             document.body

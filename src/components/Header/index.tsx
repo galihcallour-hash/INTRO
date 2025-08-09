@@ -52,39 +52,43 @@ export default function Header({ onTabChange }: { onTabChange?: (tabId: TabType)
         <div className="font-bold text-lg text-neutral-50">
           INTRO
         </div>
-        <div className="flex flex-row-reverse items-center relative">
-          {/* User Profile Dropdown */}
+        <div className="flex items-center gap-3 relative">
+          {/* Notifications */}
+          <button
+            aria-label="Notifications"
+            className="relative p-2 rounded-full text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
+            title="Notifications"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M13.73 21a2 2 0 01-3.46 0" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {/* unread dot (optional) */}
+            {/* <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" /> */}
+          </button>
+
+          {/* Avatar + Chevron (dropdown trigger) */}
           <button
             ref={buttonRef}
             onClick={toggleDropdown}
-            className="flex items-center space-x-3 bg-neutral-800 hover:bg-neutral-700 h-[34px] px-3 rounded-md transition-colors duration-200"
+            className="flex items-center gap-1 rounded-full pl-1 pr-2 py-1 hover:bg-neutral-800 transition-colors"
             title="User menu"
           >
             {/* Avatar */}
-            <div className="w-6 h-6 bg-[#359aba] rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-medium">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#3BA7BE] to-[#1d6f85] flex items-center justify-center">
+              <span className="text-white text-sm font-medium">
                 {user?.name?.charAt(0) || 'U'}
               </span>
             </div>
-            
-            {/* User Name */}
-            <span className="font-normal text-white text-xs max-w-[120px] truncate">
-              {user?.name || 'User'}
-            </span>
-            
-            {/* Dropdown Arrow */}
+            {/* Chevron */}
             <svg 
-              className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
-                showDropdown ? 'rotate-180' : ''
-              }`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
+              className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`}
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-
+ 
           {/* Dropdown Menu - Using Portal to prevent stacking context issues */}
           {showDropdown && typeof document !== 'undefined' && createPortal(
             <div 
@@ -106,7 +110,7 @@ export default function Header({ onTabChange }: { onTabChange?: (tabId: TabType)
                   {user?.email || ''}
                 </p>
               </div>
-
+ 
               {/* Menu Items */}
               <div className="py-1">
                 <button
