@@ -145,6 +145,8 @@ export default function MenuItem({
   const [isHovered, setIsHovered] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showIconPicker, setShowIconPicker] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState<{left:number; top:number}>({ left: 0, top: 0 });
+  const [iconPickerPos, setIconPickerPos] = useState<{left:number; top:number}>({ left: 0, top: 0 });
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(title);
   const threeDotsRef = useRef<HTMLButtonElement>(null);
@@ -154,9 +156,12 @@ export default function MenuItem({
   const inputRef = useRef<HTMLInputElement>(null);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dropdownReady, setDropdownReady] = useState(false);
+  const [iconPickerReady, setIconPickerReady] = useState(false);
 
   const toggleDropdown = (e: React.MouseEvent) => {
     e.stopPropagation();
+    setDropdownReady(false);
     setShowDropdown(!showDropdown);
   };
 
@@ -164,6 +169,8 @@ export default function MenuItem({
     onChangeIcon?.(iconData.icon);
     setShowIconPicker(false);
     setShowDropdown(false);
+    setIconPickerReady(false);
+    setDropdownReady(false);
   };
 
   const startEditing = () => {
@@ -260,6 +267,85 @@ export default function MenuItem({
       };
     }
   }, [showDropdown, showIconPicker]);
+
+  // Compute dropdown position once visible and on resize/scroll
+  useEffect(() => {
+    const margin = 8;
+    const computeDropdown = () => {
+      if (!showDropdown || !threeDotsRef.current || !dropdownRef.current) return;
+      const btnRect = threeDotsRef.current.getBoundingClientRect();
+      const ddRect = dropdownRef.current.getBoundingClientRect();
+      const dropdownWidth = ddRect.width || 160;
+      const dropdownHeight = ddRect.height || 160;
+      let left = btnRect.right - dropdownWidth; // right align under button
+      let top = btnRect.bottom + 6;
+      // If bottom overflows, place above
+      if (top + dropdownHeight > window.innerHeight - margin) {
+        top = Math.max(margin, btnRect.top - dropdownHeight - 6);
+      }
+      // Clamp horizontally
+      left = Math.min(Math.max(margin, left), window.innerWidth - dropdownWidth - margin);
+      setDropdownPos({ left, top });
+    };
+
+    // defer to ensure portal content measured
+    if (showDropdown) {
+      const rAF = requestAnimationFrame(computeDropdown);
+      const onWin = () => computeDropdown();
+      window.addEventListener('resize', onWin);
+      window.addEventListener('scroll', onWin, true);
+      // Mark ready after first frame compute
+      const rAF2 = requestAnimationFrame(() => setDropdownReady(true));
+      return () => {
+        cancelAnimationFrame(rAF);
+        cancelAnimationFrame(rAF2);
+        window.removeEventListener('resize', onWin);
+        window.removeEventListener('scroll', onWin, true);
+      };
+    } else {
+      setDropdownReady(false);
+      // no-op
+    }
+  }, [showDropdown]);
+
+  // Compute icon picker position next to the dropdown (auto flips if overflowing)
+  useEffect(() => {
+    const margin = 8;
+    const computePicker = () => {
+      if (!showIconPicker || !dropdownRef.current) return;
+      const ddRect = dropdownRef.current.getBoundingClientRect();
+      const btnRect = changeIconButtonRef.current?.getBoundingClientRect() || ddRect;
+      const pickerEl = iconPickerRef.current;
+      const pickerWidth = pickerEl?.offsetWidth || 360;
+      const pickerHeight = pickerEl?.offsetHeight || 420;
+      let left = ddRect.right + 8; // default show to right
+      if (left + pickerWidth > window.innerWidth - margin) {
+        left = Math.max(margin, ddRect.left - pickerWidth - 8);
+      }
+      let top = btnRect.top;
+      if (top + pickerHeight > window.innerHeight - margin) {
+        top = Math.max(margin, window.innerHeight - pickerHeight - margin);
+      }
+      setIconPickerPos({ left, top });
+    };
+
+    if (showIconPicker) {
+      const rAF = requestAnimationFrame(computePicker);
+      const onWin = () => computePicker();
+      window.addEventListener('resize', onWin);
+      window.addEventListener('scroll', onWin, true);
+      const rAF2 = requestAnimationFrame(() => setIconPickerReady(true));
+      return () => {
+        cancelAnimationFrame(rAF);
+        cancelAnimationFrame(rAF2);
+        window.removeEventListener('resize', onWin);
+        window.removeEventListener('scroll', onWin, true);
+      };
+    } else {
+      setIconPickerReady(false);
+      // no-op
+    }
+  }, [showIconPicker]);
 
   // Auto-focus input when editing starts
   useEffect(() => {
@@ -362,12 +448,13 @@ export default function MenuItem({
           {showDropdown && typeof document !== 'undefined' && createPortal(
             <div 
               ref={dropdownRef} 
-              className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg min-w-[130px] animate-in fade-in-0 zoom-in-95 duration-200 sm:min-w-[120px]"
+              className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg min-w-[150px]"
               style={{
                 zIndex: 999999,
                 position: 'fixed',
-                left: threeDotsRef.current ? threeDotsRef.current.getBoundingClientRect().right - 130 : 0,
-                top: threeDotsRef.current ? threeDotsRef.current.getBoundingClientRect().bottom + 4 : 0,
+                left: dropdownPos.left,
+                top: dropdownPos.top,
+                visibility: dropdownReady ? 'visible' : 'hidden',
               }}
             >
               <button
@@ -419,16 +506,13 @@ export default function MenuItem({
           {showIconPicker && typeof document !== 'undefined' && createPortal(
             <div 
               ref={iconPickerRef}
-              className="fixed bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg p-3 space-y-3 min-w-[360px] max-h-[420px] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-200"
+              className="fixed bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg p-3 space-y-3 min-w-[360px] max-h-[420px] overflow-y-auto"
               style={{
                 zIndex: 999999,
                 position: 'fixed',
-                left: dropdownRef.current
-                  ? dropdownRef.current.getBoundingClientRect().right + 8
-                  : (changeIconButtonRef.current ? changeIconButtonRef.current.getBoundingClientRect().right + 8 : 0),
-                top: changeIconButtonRef.current
-                  ? changeIconButtonRef.current.getBoundingClientRect().top
-                  : 0,
+                left: iconPickerPos.left,
+                top: iconPickerPos.top,
+                visibility: iconPickerReady ? 'visible' : 'hidden',
               }}
             >
               {/* Search */}

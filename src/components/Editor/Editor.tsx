@@ -204,7 +204,7 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
     if (!slashMenuState.blockId) return;
     const block = blocks.find(b => b.id === slashMenuState.blockId);
     if (!block) return;
-
+    
     if (slashMenuState.fromPlus) {
       // Insert new block of selected type below current
       const newId = handleAddBlock(block.id, type);
@@ -264,28 +264,28 @@ export default function Editor({ initialContent, onContentChange }: EditorProps)
     >
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEndDnd}>
         <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-          {blocks.map((block, index) => (
+      {blocks.map((block, index) => (
             <SortableItem key={block.id} id={block.id}>
               {(dragHandleProps) => (
                 <div data-block-id={block.id}>
-                  <Block
-                    block={block}
-                    index={index}
-                    isSelected={selectedBlockId === block.id}
-                    onContentChange={handleContentChange}
-                    onTypeChange={handleTypeChange}
-                    onAddBlock={handleAddBlock}
-                    onDeleteBlock={handleDeleteBlock}
-                    onFocus={handleBlockFocus}
-                    onKeyDown={handleKeyDown}
+          <Block
+            block={block}
+            index={index}
+            isSelected={selectedBlockId === block.id}
+            onContentChange={handleContentChange}
+            onTypeChange={handleTypeChange}
+            onAddBlock={handleAddBlock}
+            onDeleteBlock={handleDeleteBlock}
+            onFocus={handleBlockFocus}
+            onKeyDown={handleKeyDown}
                     dragHandleListeners={dragHandleProps.listeners}
                     dragHandleAttributes={dragHandleProps.attributes}
                     onOpenSlashMenu={openSlashMenuFromPlus}
-                    showSlashMenu={slashMenuState.isVisible && slashMenuState.blockId === block.id}
-                    slashMenuOptions={getFilteredSlashOptions()}
-                    onSlashMenuSelect={handleSlashMenuSelect}
-                  />
-                </div>
+            showSlashMenu={slashMenuState.isVisible && slashMenuState.blockId === block.id}
+            slashMenuOptions={getFilteredSlashOptions()}
+            onSlashMenuSelect={handleSlashMenuSelect}
+          />
+        </div>
               )}
             </SortableItem>
           ))}

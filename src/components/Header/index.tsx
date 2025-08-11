@@ -47,11 +47,11 @@ export default function Header({ onTabChange }: { onTabChange?: (tabId: TabType)
 
   return (
     <div className="bg-neutral-950 border-b border-neutral-800/30 relative z-10">
-      {/* Top Header Bar */}
-      <div className="flex flex-row h-14 items-center justify-between px-7 py-0 relative w-full">
-        <div className="font-bold text-lg text-neutral-50">
-          INTRO
-        </div>
+        {/* Top Header Bar */}
+        <div className="flex flex-row h-14 items-center justify-between px-7 py-0 relative w-full">
+          <div className="font-bold text-lg text-neutral-50">
+            INTRO
+          </div>
         <div className="flex items-center gap-3 relative">
           {/* Notifications */}
           <button

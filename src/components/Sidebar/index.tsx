@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   FolderIcon, 
   FileIcon, 
@@ -246,11 +247,16 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange, widthPx 
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   const [editSectionTitle, setEditSectionTitle] = useState('');
   const sectionDropdownRef = useRef<HTMLDivElement>(null);
-  const sectionThreeDotsRef = useRef<HTMLButtonElement>(null);
-  const sectionChangeIconBtnRef = useRef<HTMLButtonElement>(null);
+  const sectionThreeDotsRef = useRef<HTMLButtonElement>(null); // kept for fallback, but we now store anchor per-click
+  const sectionChangeIconBtnRef = useRef<HTMLButtonElement>(null); // fallback
   const [showSectionIconPicker, setShowSectionIconPicker] = useState(false);
   const sectionIconPickerRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sectionDropdownPos, setSectionDropdownPos] = useState<{left:number; top:number}>({ left: 0, top: 0 });
+  const [sectionIconPickerPos, setSectionIconPickerPos] = useState<{left:number; top:number}>({ left: 0, top: 0 });
+  const [sectionDropdownAnchorEl, setSectionDropdownAnchorEl] = useState<HTMLElement | null>(null);
+  const [sectionIconAnchorEl, setSectionIconAnchorEl] = useState<HTMLElement | null>(null);
+  const [sectionDropdownReady, setSectionDropdownReady] = useState(false);
 
   // Initialize or get sections for the current tab
   const getCurrentSections = (): SectionData[] => {
@@ -331,11 +337,80 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange, widthPx 
     }
   }, [openSectionDropdownId, showSectionIconPicker]);
 
+  // Compute section dropdown position with clamping and flip to top if needed
+  useEffect(() => {
+    const margin = 8;
+    const compute = () => {
+      if (!openSectionDropdownId || !sectionDropdownRef.current || !sectionDropdownAnchorEl) return;
+      const anchor = sectionDropdownAnchorEl;
+      const btnRect = anchor.getBoundingClientRect();
+      const ddRect = sectionDropdownRef.current.getBoundingClientRect();
+      const width = ddRect.width || 160;
+      const height = ddRect.height || 160;
+      let left = btnRect.right - width; // right-aligned to the button
+      let top = btnRect.bottom + 6;
+      if (top + height > window.innerHeight - margin) {
+        top = Math.max(margin, btnRect.top - height - 6);
+      }
+      left = Math.min(Math.max(margin, left), window.innerWidth - width - margin);
+      setSectionDropdownPos({ left, top });
+    };
+
+    if (openSectionDropdownId && sectionDropdownAnchorEl) {
+      const rAF = requestAnimationFrame(compute);
+      const rAF2 = requestAnimationFrame(() => setSectionDropdownReady(true));
+      const onWin = () => compute();
+      window.addEventListener('resize', onWin);
+      window.addEventListener('scroll', onWin, true);
+      return () => {
+        cancelAnimationFrame(rAF);
+        cancelAnimationFrame(rAF2);
+        window.removeEventListener('resize', onWin);
+        window.removeEventListener('scroll', onWin, true);
+      };
+    }
+    setSectionDropdownReady(false);
+  }, [openSectionDropdownId, sectionDropdownAnchorEl]);
+
+  // Compute section icon picker position relative to dropdown, with flipping
+  useEffect(() => {
+    const margin = 8;
+    const compute = () => {
+      if (!showSectionIconPicker || !sectionDropdownRef.current || !sectionIconAnchorEl) return;
+      const ddRect = sectionDropdownRef.current.getBoundingClientRect();
+      const btnRect = sectionIconAnchorEl.getBoundingClientRect();
+      const pickerEl = sectionIconPickerRef.current;
+      const pickerWidth = pickerEl?.offsetWidth || 360;
+      const pickerHeight = pickerEl?.offsetHeight || 420;
+      let left = ddRect.right + 8;
+      if (left + pickerWidth > window.innerWidth - margin) {
+        left = Math.max(margin, ddRect.left - pickerWidth - 8);
+      }
+      let top = btnRect.top;
+      if (top + pickerHeight > window.innerHeight - margin) {
+        top = Math.max(margin, window.innerHeight - pickerHeight - margin);
+      }
+      setSectionIconPickerPos({ left, top });
+    };
+
+    if (showSectionIconPicker && sectionIconAnchorEl) {
+      const rAF = requestAnimationFrame(compute);
+      const onWin = () => compute();
+      window.addEventListener('resize', onWin);
+      window.addEventListener('scroll', onWin, true);
+      return () => {
+        cancelAnimationFrame(rAF);
+        window.removeEventListener('resize', onWin);
+        window.removeEventListener('scroll', onWin, true);
+      };
+    }
+  }, [showSectionIconPicker, sectionIconAnchorEl]);
+
   const toggleSection = (sectionId: string) => {
     setSectionsData(prev => ({
       ...prev,
       [activeTab]: prev[activeTab].map(section => 
-        section.id === sectionId 
+        section.id === sectionId
           ? { ...section, isCollapsed: !section.isCollapsed }
           : section
       )
@@ -356,7 +431,7 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange, widthPx 
     if (action === 'duplicate') {
       const sectionIndex = sections.findIndex(s => s.id === section.id);
       const newSection: SectionData = {
-        ...section,
+              ...section,
         id: `${section.id}-copy-${Date.now()}`,
         title: `${section.title} Copy`,
       };
@@ -474,7 +549,7 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange, widthPx 
                   <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                     <button
                       ref={sectionThreeDotsRef}
-                      onClick={(e) => { e.stopPropagation(); setOpenSectionDropdownId(section.id); setShowSectionIconPicker(false); }}
+                      onClick={(e) => { e.stopPropagation(); setSectionDropdownAnchorEl(e.currentTarget as HTMLElement); setShowSectionIconPicker(false); setOpenSectionDropdownId(section.id); }}
                       className={`flex items-center justify-center p-1 rounded transition-colors duration-200 w-5 h-5 ${
                         (hoveredSection === section.id || openSectionDropdownId === section.id)
                           ? 'hover:bg-neutral-700/50 visible'
@@ -502,97 +577,93 @@ export default function Sidebar({ activeTab = 'designer', onMenuChange, widthPx 
                 </div>
 
                 {/* Section dropdown - portal */}
-                {openSectionDropdownId === section.id && typeof document !== 'undefined' && (
-                  <div 
-                    ref={sectionDropdownRef}
-                    className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg min-w-[150px] z-[999999]"
-                    style={{
-                      position: 'fixed',
-                      left: sectionThreeDotsRef.current ? sectionThreeDotsRef.current.getBoundingClientRect().right - 150 : 0,
-                      top: sectionThreeDotsRef.current ? sectionThreeDotsRef.current.getBoundingClientRect().bottom + 4 : 0,
-                    }}
-                  >
-                    <button
-                      onClick={() => handleSectionDropdownAction('rename', section)}
-                      className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700"
+                {openSectionDropdownId === section.id && typeof document !== 'undefined' &&
+                  (createPortal(
+                    <div 
+                      ref={sectionDropdownRef}
+                      className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg min-w-[150px] z-[999999]"
+                      style={{ left: sectionDropdownPos.left, top: sectionDropdownPos.top, visibility: sectionDropdownReady ? 'visible' : 'hidden' }}
                     >
-                      <div className="w-3 h-3 mr-2"><EditIcon /></div>
-                      Rename
-                    </button>
-                    <button
-                      ref={sectionChangeIconBtnRef}
-                      onClick={() => handleSectionDropdownAction('changeIcon', section)}
-                      className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700"
-                    >
-                      <div className="w-3 h-3 mr-2"><ChangeImageIcon /></div>
-                      <span className="mr-auto">Change Icon</span>
-                      <div className="w-3 h-3 -rotate-90 opacity-60"><ChevronIcon /></div>
-                    </button>
-                    <button
-                      onClick={() => handleSectionDropdownAction('duplicate', section)}
-                      className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700"
-                    >
-                      <div className="w-3 h-3 mr-2"><CopyIcon /></div>
-                      Duplicate
-                    </button>
-                    <button
-                      onClick={() => handleSectionDropdownAction('delete', section)}
-                      className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 hover:text-red-400"
-                    >
-                      <div className="w-3 h-3 mr-2"><DeleteIcon /></div>
-                      Delete
-                    </button>
-                  </div>
-                )}
-
+                      <button
+                        onClick={() => handleSectionDropdownAction('rename', section)}
+                        className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700"
+                      >
+                        <div className="w-3 h-3 mr-2"><EditIcon /></div>
+                        Rename
+                      </button>
+                      <button
+                        ref={sectionChangeIconBtnRef}
+                        onClick={(e) => { setSectionIconAnchorEl(e.currentTarget as HTMLElement); handleSectionDropdownAction('changeIcon', section); }}
+                        className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700"
+                      >
+                        <div className="w-3 h-3 mr-2"><ChangeImageIcon /></div>
+                        <span className="mr-auto">Change Icon</span>
+                        <div className="w-3 h-3 -rotate-90 opacity-60"><ChevronIcon /></div>
+                      </button>
+                      <button
+                        onClick={() => handleSectionDropdownAction('duplicate', section)}
+                        className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700"
+                      >
+                        <div className="w-3 h-3 mr-2"><CopyIcon /></div>
+                        Duplicate
+                      </button>
+                      <button
+                        onClick={() => handleSectionDropdownAction('delete', section)}
+                        className="w-full flex items-center px-3 py-2 text-xs text-neutral-200 hover:bg-neutral-700 hover:text-red-400"
+                      >
+                        <div className="w-3 h-3 mr-2"><DeleteIcon /></div>
+                        Delete
+                      </button>
+                    </div>,
+                    document.body
+                  ))}
+ 
                 {/* Section icon picker - portal */}
-                {showSectionIconPicker && openSectionDropdownId === section.id && typeof document !== 'undefined' && (
-                  <div
-                    ref={sectionIconPickerRef}
-                    className="fixed bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg p-3 space-y-3 min-w-[360px] max-h-[420px] overflow-y-auto z-[999999]"
-                    style={{
-                      position: 'fixed',
-                      left: sectionDropdownRef.current ? sectionDropdownRef.current.getBoundingClientRect().right + 8 : 0,
-                      top: sectionChangeIconBtnRef.current ? sectionChangeIconBtnRef.current.getBoundingClientRect().top : 0,
-                    }}
-                  >
-                    <div className="px-2">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Search icons..."
-                          className="w-full bg-neutral-900 text-neutral-200 placeholder-neutral-500 rounded-md pl-8 pr-3 py-2 text-xs border border-neutral-700 focus:outline-none focus:ring-0"
-                        />
-                        <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500">
-                          <SearchIcon />
+                {showSectionIconPicker && openSectionDropdownId === section.id && typeof document !== 'undefined' &&
+                  (createPortal(
+                    <div
+                      ref={sectionIconPickerRef}
+                      className="fixed bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg p-3 space-y-3 min-w-[360px] max-h-[420px] overflow-y-auto z-[999999]"
+                      style={{ left: sectionIconPickerPos.left, top: sectionIconPickerPos.top }}
+                    >
+                      <div className="px-2">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search icons..."
+                            className="w-full bg-neutral-900 text-neutral-200 placeholder-neutral-500 rounded-md pl-8 pr-3 py-2 text-xs border border-neutral-700 focus:outline-none focus:ring-0"
+                          />
+                          <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500">
+                            <SearchIcon />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    {iconCategories.map((category, idx) => (
-                      <div key={idx} className="flex flex-col">
-                        <div className="text-xs text-neutral-300 mb-1 px-2">{category.label}</div>
-                        <div className="grid grid-cols-6 gap-2">
-                          {category.icons
-                            .filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                            .map((iconData, iIndex) => (
-                              <button
-                                key={iIndex}
-                                onClick={() => handleSectionIconSelect(iconData)}
-                                className="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-[#359aba] hover:bg-neutral-700/50 rounded-md transition-colors duration-200"
-                                title={iconData.name}
-                              >
-                                <div className="w-4 h-4 [&>svg]:w-4 [&>svg]:h-4 flex items-center justify-center">
-                                  {iconData.icon}
-                                </div>
-                              </button>
-                            ))}
+                      {iconCategories.map((category, idx) => (
+                        <div key={idx} className="flex flex-col">
+                          <div className="text-xs text-neutral-300 mb-1 px-2">{category.label}</div>
+                          <div className="grid grid-cols-6 gap-2">
+                            {category.icons
+                              .filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                              .map((iconData, iIndex) => (
+                                <button
+                                  key={iIndex}
+                                  onClick={() => handleSectionIconSelect(iconData)}
+                                  className="w-12 h-12 flex items-center justify-center text-neutral-400 hover:text-[#359aba] hover:bg-neutral-700/50 rounded-md transition-colors duration-200"
+                                  title={iconData.name}
+                                >
+                                  <div className="w-4 h-4 [&>svg]:w-4 [&>svg]:h-4 flex items-center justify-center">
+                                    {iconData.icon}
+                                  </div>
+                                </button>
+                              ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>,
+                    document.body
+                  ))}
               </div>
             </div>
 

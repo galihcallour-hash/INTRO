@@ -16,6 +16,7 @@ export type BlockType =
   | 'linkToPage'
   | 'callout'
   | 'quote'
+  | 'codeBlock'
   | 'table'
   | 'image'
   | 'divider';
@@ -72,6 +73,37 @@ export default function Block({
   const contentRef = useRef<HTMLDivElement>(null);
   const slashMenuRef = useRef<HTMLDivElement>(null);
 
+  // Ensure toolbar appears reliably on mouse or keyboard selection
+  useEffect(() => {
+    const isInside = (node: Node | null, container: HTMLElement | null) => {
+      if (!node || !container) return false;
+      let n: Node | null = node;
+      while (n) {
+        if (n === container) return true;
+        n = (n as HTMLElement).parentNode;
+      }
+      return false;
+    };
+
+    const updateFromSelection = () => {
+      if (!isSelected) { setShowFormatToolbar(false); return; }
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) { setShowFormatToolbar(false); return; }
+      const range = sel.getRangeAt(0);
+      if (sel.toString().length === 0 || range.collapsed) { setShowFormatToolbar(false); return; }
+      // Only show when selection is within this block's content
+      const anchorIn = isInside(sel.anchorNode, contentRef.current);
+      const focusIn = isInside(sel.focusNode, contentRef.current);
+      if (!anchorIn || !focusIn) { setShowFormatToolbar(false); return; }
+      const rect = range.getBoundingClientRect();
+      setToolbarPosition({ x: rect.left + rect.width / 2, y: rect.top + window.scrollY });
+      setShowFormatToolbar(true);
+    };
+
+    document.addEventListener('selectionchange', updateFromSelection);
+    return () => document.removeEventListener('selectionchange', updateFromSelection);
+  }, [isSelected]);
+
   // Keep DOM text in sync without letting React control text nodes
   useEffect(() => {
     if (!contentRef.current) return;
@@ -80,7 +112,7 @@ export default function Block({
     if ((el.textContent || '') !== (block.content || '')) {
       el.textContent = block.content || '';
     }
-  }, [block.content, block.id]);
+  }, [block.content, block.id, block.type]);
 
   const handleContentChange = (e: React.FormEvent<HTMLDivElement>) => {
     const content = e.currentTarget.textContent || '';
@@ -148,25 +180,48 @@ export default function Block({
     onKeyDown(e, block.id, index);
   };
 
+  const handleKeyUp = () => {
+    // Trigger selection handler when using Shift+Arrow selections
+    const sel = window.getSelection();
+    if (!sel) return;
+    requestAnimationFrame(() => {
+      if (!isSelected) return;
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+      const range = selection.getRangeAt(0);
+      if (selection.toString().length === 0 || range.collapsed) return;
+      const rect = range.getBoundingClientRect();
+      setToolbarPosition({ x: rect.left + rect.width / 2, y: rect.top + window.scrollY });
+      setShowFormatToolbar(true);
+    });
+  };
+
   const handleFocus = () => {
     onFocus(block.id);
   };
 
   const handleMouseUp = () => {
     const selection = window.getSelection();
-    if (selection && selection.toString().length > 0) {
-      const range = selection.getRangeAt(0);
+    if (!selection) { setShowFormatToolbar(false); return; }
+    requestAnimationFrame(() => {
+      if (!isSelected) { setShowFormatToolbar(false); return; }
+      const sel = window.getSelection();
+      if (!sel) { setShowFormatToolbar(false); return; }
+      if (sel.rangeCount === 0) { setShowFormatToolbar(false); return; }
+      const range = sel.getRangeAt(0);
+      if (sel.toString().length === 0 || range.collapsed) {
+        setShowFormatToolbar(false);
+        return;
+      }
       const rect = range.getBoundingClientRect();
-      
-
-      setToolbarPosition({
-        x: rect.left + (rect.width / 2),
-        y: rect.top + window.scrollY
-      });
+      setToolbarPosition({ x: rect.left + rect.width / 2, y: rect.top + window.scrollY });
       setShowFormatToolbar(true);
-    } else {
-      setShowFormatToolbar(false);
-    }
+    });
+  };
+
+  const handleMouseDown = () => {
+    // While user is adjusting selection, hide toolbar
+    setShowFormatToolbar(false);
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,6 +244,7 @@ export default function Block({
       linkToPage: 'Link to page',
       callout: 'Callout',
       quote: 'Quote',
+      codeBlock: 'Code',
       table: 'Table',
       image: null,
       divider: null,
@@ -206,8 +262,10 @@ export default function Block({
       suppressContentEditableWarning: true,
       onInput: handleContentChange,
       onKeyDown: handleKeyDown,
+      onKeyUp: handleKeyUp,
       onFocus: handleFocus,
       onMouseUp: handleMouseUp,
+      onMouseDown: handleMouseDown,
       className: `outline-none min-h-[1.5rem] focus:outline-none`,
       'data-placeholder': getPlaceholder(),
       'data-empty': block.content === '' ? 'true' : 'false'
@@ -216,15 +274,15 @@ export default function Block({
     switch (block.type) {
       case 'heading1':
         return (
-          <h1 {...commonProps} className={`${commonProps.className} text-2xl font-bold text-neutral-50 text-left`} />
+          <h1 {...commonProps} className={`${commonProps.className} text-[28px] leading-[1.2] font-bold text-neutral-50 text-left`} />
         );
       case 'heading2':
         return (
-          <h2 {...commonProps} className={`${commonProps.className} text-xl font-semibold text-neutral-50 text-left`} />
+          <h2 {...commonProps} className={`${commonProps.className} text-[24px] leading-[1.25] font-semibold text-neutral-50 text-left`} />
         );
       case 'heading3':
         return (
-          <h3 {...commonProps} className={`${commonProps.className} text-lg font-medium text-neutral-50 text-left`} />
+          <h3 {...commonProps} className={`${commonProps.className} text-[20px] leading-[1.3] font-medium text-neutral-50 text-left`} />
         );
       case 'bulletList':
         return (
@@ -276,6 +334,12 @@ export default function Block({
         return (
           <div {...commonProps} className={`${commonProps.className} text-neutral-200 text-left`} />
         );
+      case 'codeBlock':
+        return (
+          <div className="rounded-md bg-neutral-800/60 border border-neutral-700 p-3 text-left font-mono text-sm">
+            <div {...commonProps} className={`${commonProps.className} text-neutral-200 text-left`} />
+          </div>
+        );
       case 'table':
         return (
           <div className="rounded-md border border-neutral-700 p-2 text-left">
@@ -319,21 +383,23 @@ export default function Block({
         {...dragHandleListeners}
         title="Drag to move"
       />
-      
+
       {/* Action Controls - Show when block is selected or hovered */}
       {(isSelected || isHovered) && !isDragging && (
-        <div className={`absolute left-[-44px] top-1 flex items-center space-x-1 transition-opacity duration-200 ${
-          isSelected ? 'opacity-100' : 'opacity-70'
-        }`}>
+        <div
+          className={`absolute left-[-44px] top-1 flex items-center space-x-1 transition-opacity duration-200 ${
+            isSelected ? 'opacity-100' : 'opacity-70'
+          }`}
+        >
           {/* Add Block Button */}
           <button
-            onClick={() => onOpenSlashMenu ? onOpenSlashMenu(block.id) : handleAddBlock()}
+            onClick={() => (onOpenSlashMenu ? onOpenSlashMenu(block.id) : handleAddBlock())}
             className="p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors duration-200"
             title="Add block"
           >
             <PlusIcon />
           </button>
-          
+
           {/* Drag Handle */}
           <div
             className="p-1 rounded hover:bg-neutral-700 text-neutral-400 hover:text-neutral-200 transition-colors duration-200 cursor-grab active:cursor-grabbing"
@@ -357,7 +423,7 @@ export default function Block({
             }`}
           />
         )}
-        
+
         {/* Placeholder styling */}
         <style jsx>{`
           /* Fallback: when DOM truly empty */
@@ -385,40 +451,43 @@ export default function Block({
       </div>
 
       {/* Slash Menu - Using Portal to prevent stacking context issues */}
-      {showSlashMenu && typeof document !== 'undefined' && createPortal(
-        <div
-          ref={slashMenuRef}
-          data-slash-menu
-          className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg min-w-[300px] max-h-[300px] overflow-y-auto"
-          style={{
-            zIndex: 999999,
-            position: 'fixed',
-            left: contentRef.current ? contentRef.current.getBoundingClientRect().left : 0,
-            top: contentRef.current ? contentRef.current.getBoundingClientRect().bottom + 4 : 0,
-          }}
-        >
-          {slashMenuOptions.map((option) => (
-            <button
-              key={option.type}
-              onClick={() => handleSlashMenuClick(option.type)}
-              className="w-full flex items-start px-3 py-2 text-left hover:bg-neutral-700 transition-colors duration-200"
-            >
-              <div>
-                <div className="text-sm text-neutral-200 font-medium">{option.label}</div>
-                <div className="text-xs text-neutral-400">{option.description}</div>
-              </div>
-            </button>
-          ))}
-        </div>,
-        document.body
-      )}
+      {showSlashMenu && typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={slashMenuRef}
+            data-slash-menu
+            className="fixed bg-neutral-800 border border-neutral-700 rounded-md shadow-lg min-w-[300px] max-h-[300px] overflow-y-auto"
+            style={{
+              zIndex: 999999,
+              position: 'fixed',
+              left: contentRef.current ? contentRef.current.getBoundingClientRect().left : 0,
+              top: contentRef.current ? contentRef.current.getBoundingClientRect().bottom + 4 : 0,
+            }}
+          >
+            {slashMenuOptions.map((option) => (
+              <button
+                key={option.type}
+                onClick={() => handleSlashMenuClick(option.type)}
+                className="w-full flex items-start px-3 py-2 text-left hover:bg-neutral-700 transition-colors duration-200"
+              >
+                <div>
+                  <div className="text-sm text-neutral-200 font-medium">{option.label}</div>
+                  <div className="text-xs text-neutral-400">{option.description}</div>
+                </div>
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
 
       {/* Text Formatting Toolbar */}
       <TextFormatter
         show={showFormatToolbar}
         position={toolbarPosition}
         onClose={() => setShowFormatToolbar(false)}
+        onTurnInto={(type) => onTypeChange(block.id, type)}
+        currentType={block.type}
       />
     </div>
   );
-} 
+}

@@ -96,7 +96,7 @@ const getContentForMenu = (menuId: string): { title: string; icon: React.ReactNo
     },
     'folder-name': {
       title: 'Folder Name',
-      icon: <FolderIcon />,
+  icon: <FolderIcon />,
       description: 'Naming conventions for project folders and organization',
       content: [
         { id: 'empty-content', type: 'paragraph', content: '' }
